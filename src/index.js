@@ -8,7 +8,7 @@ client.on('ready', () => {
 
 client.on('message', msg => {
   if (msg.content === startMessage + 'cheese') {
-    const kekw = msg.guild.emojis.cache.find(emojis => emojis.name === 'kekw');
+    const kekw = Discord.guild.emojis.cache.find(emojis => emojis.name === 'kekw');
     msg.channel.send(`${kekw}`);
   }
 
@@ -26,6 +26,10 @@ client.on('message', msg => {
     msg.channel.send(`:wink:`);
   }
 
+  if (msg.content === startMessage + 'brb') {
+    msg.channel.send(`gtg eat`);
+  }
+
   if (msg.content === startMessage + 'winkall') {
     msg.channel.send(`:wink: ${msg.guild.members.cache.find(users => users.id == '308653237211234317')}\n
     :wink: ${msg.guild.members.cache.find(users => users.id == '655358675170361344')}\n
@@ -34,6 +38,11 @@ client.on('message', msg => {
     :wink: ${msg.guild.members.cache.find(users => users.id == '312629007864823808')}\n
     :wink: ${msg.guild.members.cache.find(users => users.id == '397899899255128064')}`);
   }
+
+  /*if (msg.author.id === '655358675170361344') {
+    const kekw = msg.guild.emojis.cache.find(emojis => emojis.name === 'kekw');
+    msg.channel.send(`simp ${kekw}`);
+  }*/
 });
 
 client.login('NTExMTc3MzA2NDc2MzgwMTg5.Xuo6FA.kuvT0a7ama0eO8aGalioQFCAyK0');
