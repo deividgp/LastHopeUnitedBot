@@ -8,7 +8,7 @@ client.on('ready', () => {
 
 client.on('message', msg => {
   if (msg.content === startMessage + 'cheese') {
-    const kekw = Discord.guild.emojis.cache.find(emojis => emojis.name === 'kekw');
+    const kekw = msg.guild.emojis.cache.find(emoji => emoji.name === 'kekw');
     msg.channel.send(`${kekw}`);
   }
 
