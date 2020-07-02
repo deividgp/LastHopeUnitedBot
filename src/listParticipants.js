@@ -87,17 +87,17 @@ class ListParticipants {
 
         switch(this._participants[index].role){
           case '🛡️':
-            this.subtractTank--;
+            this.subtractTank();
             break;
           case '🚑':
-            this.subtractHealer--;
+            this.subtractHealer();
             break;
           case '⚔️':
-            this.subtractDD--;
+            this.subtractDD();
             //ddmCounter--;
             break;
           case '🏹':
-            this.subtractDD--;
+            this.subtractDD();
             //ddrCounter--;
             break;
         }
