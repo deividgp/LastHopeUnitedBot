@@ -31,17 +31,20 @@ class ListParticipants {
       return this._ddMax;
     }
 
+    get hCounter(){
+      return this._hCounter;
+    }
+
+    get tCounter(){
+      return this._tCounter;
+    }
+
+    get ddCounter(){
+      return this._ddCounter;
+    }
+
     get daytime(){
       return this._daytime;
-    }
-
-    set name(name){
-      this._name = name;
-    }
-
-    set tMax(tMax){
-      this._tMax = tMax;
-      this._ddMax = 12 - (tMax + this._hMax);
     }
     
     addHealer(){
@@ -88,6 +91,7 @@ class ListParticipants {
         switch(this._participants[index].role){
           case '🛡️':
             this.subtractTank();
+            console.log(`deleted ${this._tCounter}`);
             break;
           case '🚑':
             this.subtractHealer();
@@ -112,7 +116,7 @@ class ListParticipants {
         return true;
 
       }else{
-        return msg.channel.send(`Can't delete: id not found, ${message.author}!`);
+        return message.channel.send(`Can't delete: id not found, ${message.author}!`);
       }
 
     }
@@ -133,6 +137,20 @@ class ListParticipants {
       return undefined;
     }
 
+    manyMembersRole(role){
+      var counter = 0;
+
+      for (let index = 0; index < this._counter; index++) {
+        const element = this._participants[index];
+    
+        if (element.role === role) {
+          counter++;
+        }
+      }
+      
+      return counter;
+    }
+
     async listParticipants(message){
       await await message.channel.send(`**${this._name} at ${this._daytime}**`);
       for (let index = 0; index < this._counter; index++) {
@@ -142,13 +160,15 @@ class ListParticipants {
           
       }
     }
-
+    
     emojisCounter(userId, role, message){
+      //var counter = undefined;
 
       if(this.findParticipant(userId, '') == undefined){
         switch(role){
           case '🛡️':
             this.addTank();
+            console.log(`added ${this._tCounter}`);
             break;
           case '🚑':
             this.addHealer();
@@ -161,16 +181,43 @@ class ListParticipants {
             this.addDD();
             //ddrCounter++;
             break;
-          default:
-            return message.channel.send(`Role isn't right, ${message.author}!`);
         }
       
         return ((this._hCounter <= this._hMax && role === '🚑') || (this._tCounter <= this._tMax && role === '🛡️') || 
               (this._ddCounter <= this._ddMax && role === '⚔️') || (this._ddCounter <= this._ddMax && role === '🏹'));
+        /*return (counter != undefined && ((this._hCounter <= this._hMax && role === '🚑') || (this._tCounter <= this._tMax && role === '🛡️') || 
+        (this._ddCounter <= this._ddMax && role === '⚔️') || (this._ddCounter <= this._ddMax && role === '🏹')));*/
       }
     
       return false;
         
+    }
+
+    revert(role){
+      var manyMembers = this.manyMembersRole(role);
+      switch(role){
+        case '🛡️':
+          if(this._tCounter > manyMembers){
+            this.subtractTank();
+            console.log(`deleted ${this._tCounter}`);
+          }
+          break;
+        case '🚑':
+          if(this.hCounter() > manyMembers){
+            this.subtractHealer();
+          }
+          break;
+        case '⚔️':
+          if(this.ddCounter() > manyMembers){
+            this.subtractDD();
+          }
+          break;
+        case '🏹':
+          if(this.ddCounter() > manyMembers){
+            this.subtractDD();
+          }
+          break;
+      }
     }
 }
 module.exports = ListParticipants;

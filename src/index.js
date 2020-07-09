@@ -100,7 +100,7 @@ client.on('message', msg => {
       participants[num] = new ListParticipants(args[0], parseInt(args[1]), `${args[2]} ${args[3]}`);
       let pollEmbed = new Discord.MessageEmbed()
         .setTitle(participants[num].name)
-        .addField('Day and time', `${participants[num].daytime}`, false)
+        .addField('Day and time (CEST)', `${participants[num].daytime}`, false)
         .addFields(
           { name: 'Tanks', value: `${participants[num].tMax}`, inline: true },
           { name: 'Healers', value: '2', inline: true },
@@ -117,14 +117,17 @@ client.on('message', msg => {
         const filter = (reaction, user) => {
           if(messageReaction.author.id != user.id){
             
-            var verify = participants[num].emojisCounter(user.id, reaction.emoji.name, messageReaction);
+            var verify = participants[num].emojisCounter(user.id, reaction.emoji.name);
             
             if(verify == true){
               return true;
             }else if(verify == false && participants[num].findParticipant(user.id, reaction.emoji.name) == undefined){
               reaction.users.remove(user.id);
             }
-  
+
+            if(verify == false){
+              participants[num].revert(reaction.emoji.name);
+            }
           }
 
           if(participants[num].findParticipant(user.id, '') != undefined){
@@ -167,7 +170,7 @@ client.on('message', msg => {
       participants[num] = new ListParticipants(args[0], parseInt(args[1]), `${args[2]} ${args[3]}`);
       let pollEmbed = new Discord.MessageEmbed()
         .setTitle(participants[num].name)
-        .addField('Day and time', `${participants[num].daytime}`, false)
+        .addField('Day and time (CEST)', `${participants[num].daytime}`, false)
         .addFields(
           { name: 'Tanks', value: `${participants[num].tMax}`, inline: true },
           { name: 'Healers', value: '2', inline: true },
@@ -184,14 +187,17 @@ client.on('message', msg => {
         const filter = (reaction, user) => {
           if(messageReaction.author.id != user.id){
             
-            var verify = participants[num].emojisCounter(user.id, reaction.emoji.name, messageReaction);
+            var verify = participants[num].emojisCounter(user.id, reaction.emoji.name);
             
             if(verify == true){
               return true;
             }else if(verify == false && participants[num].findParticipant(user.id, reaction.emoji.name) == undefined){
               reaction.users.remove(user.id);
             }
-  
+
+            if(verify == false){
+              participants[num].revert(reaction.emoji.name);
+            }
           }
 
           if(participants[num].findParticipant(user.id, '') != undefined){
@@ -259,11 +265,12 @@ client.on('message', msg => {
   
         }else{
           
-          let verify = participants[parseInt(args[2])].emojisCounter(args[0], args[1], msg);
+          let verify = participants[parseInt(args[2])].emojisCounter(args[0], args[1]);
 
           if(verify){
             participants[parseInt(args[2])].addParticipant(args[0], args[1]);
           }else{
+            participants[parseInt(args[2])].revert(args[1]);
             msg.channel.send(`Can't add participant, ${msg.author}!`);
           }
         }
