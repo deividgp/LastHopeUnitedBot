@@ -168,7 +168,6 @@ class ListParticipants {
         switch(role){
           case '🛡️':
             this.addTank();
-            console.log(`added ${this._tCounter}`);
             break;
           case '🚑':
             this.addHealer();
@@ -199,21 +198,20 @@ class ListParticipants {
         case '🛡️':
           if(this._tCounter > manyMembers){
             this.subtractTank();
-            console.log(`deleted ${this._tCounter}`);
           }
           break;
         case '🚑':
-          if(this.hCounter() > manyMembers){
+          if(this._hCounter > manyMembers){
             this.subtractHealer();
           }
           break;
         case '⚔️':
-          if(this.ddCounter() > manyMembers){
+          if(this._ddCounter > manyMembers){
             this.subtractDD();
           }
           break;
         case '🏹':
-          if(this.ddCounter() > manyMembers){
+          if(this._ddCounter > manyMembers){
             this.subtractDD();
           }
           break;
