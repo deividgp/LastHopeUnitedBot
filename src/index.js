@@ -11,8 +11,8 @@ var participants = [];
 var participantsCount = 0;
 //var participants;
 //var trials = new ListTrials();
-var isActive = [];
 const maxSize = 12;
+var trialsCounter = 0;
 
 client.on('ready', () => {
   console.log(`Logged in as ${client.user.tag}!`);
@@ -48,6 +48,16 @@ client.on('message', msg => {
 
     const disgust = new Discord.MessageAttachment('https://cdn.discordapp.com/emojis/684133015043178526.png');
     msg.channel.send(disgust);
+
+  }else if (command === 'thot') {
+
+    const thot = new Discord.MessageAttachment('https://media1.tenor.com/images/c0086dbd46e551b5aa1ea42de6960b3b/tenor.gif?itemid=10386441');
+    msg.channel.send(thot);
+    
+  }else if (command === 'putin') {
+
+    const putin = new Discord.MessageAttachment('https://media1.tenor.com/images/c59a419de2c2b94aa95215d575ea9a14/tenor.gif?itemid=17444588');
+    msg.channel.send(putin);
 
   }else if (command === 'wink') {
 
@@ -91,205 +101,92 @@ client.on('message', msg => {
       guildID = msg.guild.id;
       channelID = msg.channel.id;
 
-    }else if (command === 'start0') {
-      var num = 0;
-
-      isActive[num] = true;
-      msg.delete();
-
-      participants[num] = new ListParticipants(args[0], parseInt(args[1]), `${args[2]} ${args[3]}`);
-      let pollEmbed = new Discord.MessageEmbed()
-        .setTitle(participants[num].name)
-        .addField('Day and time (CEST)', `${participants[num].daytime}`, false)
-        .addFields(
-          { name: 'Tanks', value: `${participants[num].tMax}`, inline: true },
-          { name: 'Healers', value: '2', inline: true },
-          { name: 'Damage Dealers', value: `${participants[num].ddMax}`, inline: true },
-        )
-
-      msg.channel.send(pollEmbed).then(async function (messageReaction) {
-        
-        await messageReaction.react('🛡️');
-        await messageReaction.react('🚑');
-        await messageReaction.react('⚔️');
-        await messageReaction.react('🏹');
-        
-        const filter = (reaction, user) => {
-          if(messageReaction.author.id != user.id){
-            
-            var verify = participants[num].emojisCounter(user.id, reaction.emoji.name);
-            
-            if(verify == true){
-              return true;
-            }else if(verify == false && participants[num].findParticipant(user.id, reaction.emoji.name) == undefined){
-              reaction.users.remove(user.id);
-            }
-
-            if(verify == false){
-              participants[num].revert(reaction.emoji.name);
-            }
-          }
-
-          if(participants[num].findParticipant(user.id, '') != undefined){
-            var name = reaction.emoji.name;
-            const userReactions = messageReaction.reactions.cache.filter(reaction => reaction.users.cache.has(user.id));
-  
-            try {
-              for (const reaction of userReactions.values()) {
-                if(reaction.emoji.name === name && participants[num].findParticipant(user.id, reaction.emoji.name) == undefined){
-                  reaction.users.remove(user.id);
-                }
-              }
-            } catch (error) {
-              console.error('Failed to remove reactions.');
-            }
-          }
-          return false;
-        };
-        
-        const collector = messageReaction.createReactionCollector(filter, { });
-        
-        collector.on('collect', (reaction, user) => {
-          participants[num].addParticipant(user.id, reaction.emoji.name);
-          console.log(`Collected ${reaction.emoji.name} from ${user.tag}`);
-          messageReaction.channel.send(`${messageReaction.guild.members.cache.find(users => users.id == user.id)} signed up for **${participants[num].name}** as ${reaction.emoji.name}`);
-  
-          if(participants[num].counter === maxSize){
-            participants[num].listParticipants(messageReaction);
-          }
-  
-        });
-  
-      });
-
-    }else if (command === 'start1') {
-      var num = 1;
-
-      isActive[1] = true;
-      msg.delete();
-      participants[num] = new ListParticipants(args[0], parseInt(args[1]), `${args[2]} ${args[3]}`);
-      let pollEmbed = new Discord.MessageEmbed()
-        .setTitle(participants[num].name)
-        .addField('Day and time (CEST)', `${participants[num].daytime}`, false)
-        .addFields(
-          { name: 'Tanks', value: `${participants[num].tMax}`, inline: true },
-          { name: 'Healers', value: '2', inline: true },
-          { name: 'Damage Dealers', value: `${participants[num].ddMax}`, inline: true },
-        )
-      
-      msg.channel.send(pollEmbed).then(async function (messageReaction) {
-        
-        await messageReaction.react('🛡️');
-        await messageReaction.react('🚑');
-        await messageReaction.react('⚔️');
-        await messageReaction.react('🏹');
-        
-        const filter = (reaction, user) => {
-          if(messageReaction.author.id != user.id){
-            
-            var verify = participants[num].emojisCounter(user.id, reaction.emoji.name);
-            
-            if(verify == true){
-              return true;
-            }else if(verify == false && participants[num].findParticipant(user.id, reaction.emoji.name) == undefined){
-              reaction.users.remove(user.id);
-            }
-
-            if(verify == false){
-              participants[num].revert(reaction.emoji.name);
-            }
-          }
-
-          if(participants[num].findParticipant(user.id, '') != undefined){
-            var name = reaction.emoji.name;
-            const userReactions = messageReaction.reactions.cache.filter(reaction => reaction.users.cache.has(user.id));
-  
-            try {
-              for (const reaction of userReactions.values()) {
-                if(reaction.emoji.name === name && participants[num].findParticipant(user.id, reaction.emoji.name) == undefined){
-                  reaction.users.remove(user.id);
-                }
-              }
-            } catch (error) {
-              console.error('Failed to remove reactions.');
-            }
-          }
-          return false;
-        };
-        
-        const collector = messageReaction.createReactionCollector(filter, { });
-        
-        collector.on('collect', (reaction, user) => {
-          participants[num].addParticipant(user.id, reaction.emoji.name);
-          console.log(`${messageReaction.guild.members.cache.find(users => users.id == user.id)} signed up for ${participants[num].name} as ${reaction.emoji.name}`);
-          messageReaction.channel.send(`${messageReaction.guild.members.cache.find(users => users.id == user.id)} signed up for **${participants[num].name}** as ${reaction.emoji.name}`);
-  
-          if(participants[num].counter === maxSize){
-            participants[num].listParticipants(messageReaction);
-          }
-  
-        });
-  
-      });
+    }else if(command == 'start'){
+      startTrial(msg, msg.channel, args);
     }
 
-    if(isActive[0] || isActive[1]){
-      if (command === 'end') {
-
+    if(parseInt(args[0]) != 0 && parseInt(args[0]) <= trialsCounter){
+      /*if (command === 'end') {
         participants[parseInt(args[0])] = undefined;
-        isActive[parseInt(args[0])] = false;
         //participants = new ListParticipants();
-        //isActive = false;
         //hCounter = 0;
         //tCounter = 0;
         //ddCounter = 0;
         //ddmCounter = 0;
         //ddrCounter = 0;
-      
-      //Lists all participants (!list trial(0 or 1))
-      }else if (command === 'list') {
+      }*/
+      //Lists all participants (!list trial)
+      if (command === 'list') {
 
-        participants[parseInt(args[0])].listParticipants(msg);
+        participants[parseInt(args[0])-1].listParticipants(msg);
       
-      //Adds a participant (!add userid role trial(0 or 1))
+      //Adds a participant (!add trial userid role)
       }else if (command === 'add') {
   
-        if (args[0] == undefined || args[1] == undefined) {
+        if (args[1] == undefined || args[2] == undefined) {
   
           msg.channel.send(`You didn't provide enough arguments, ${msg.author}!`);
   
         }
-        else if (args[0] === client.user.id){
+        else if (args[1] === client.user.id){
   
           msg.channel.send(`You can't provide bot's id, ${msg.author}!`);
   
         }else{
           
-          let verify = participants[parseInt(args[2])].emojisCounter(args[0], args[1]);
+          let verify = participants[parseInt(args[0])-1].emojisCounter(args[1], args[2]);
 
           if(verify){
-            participants[parseInt(args[2])].addParticipant(args[0], args[1]);
+            participants[parseInt(args[0])-1].addParticipant(args[1], args[2]);
           }else{
-            participants[parseInt(args[2])].revert(args[1]);
+            participants[parseInt(args[0])-1].revert(args[2]);
             msg.channel.send(`Can't add participant, ${msg.author}!`);
           }
         }
+      //Update a participant (!update trial userid newRole)
+      }else if (command === 'update'){
 
-      //Delete a participant (!delete userid trial(0 or 1))
-      }else if (command === 'delete') {
-
-        if (args[0] == undefined) {
+        if (args[1] == undefined || args[2] == undefined) {
   
           msg.channel.send(`You didn't provide enough arguments, ${msg.author}!`);
   
-        }else if (args[0] === client.user.id){
+        }
+        else if (args[1] === client.user.id){
+  
+          msg.channel.send(`You can't provide bot's id, ${msg.author}!`);
+  
+        }else{
+          let index = participants[parseInt(args[0])-1].findParticipant(args[1], '');
+          let oldRole = participants[parseInt(args[0])-1].participants[index].role;
+          console.log(oldRole);
+          participants[parseInt(args[0])-1].deleteParticipant(index, msg);
+
+          let verify = participants[parseInt(args[0])-1].emojisCounter(args[1], args[2]);
+
+          if(verify){
+            participants[parseInt(args[0])-1].addParticipant(args[1], args[2]);
+          }else{
+            participants[parseInt(args[0])-1].revert(args[2]);
+            participants[parseInt(args[0])-1].addParticipant(args[1], oldRole);
+            msg.channel.send(`Can't update participant, ${msg.author}!`);
+          }
+        }
+
+      //Delete a participant (!delete trial userid)
+      }else if (command === 'delete') {
+
+        if (args[1] == undefined) {
+  
+          msg.channel.send(`You didn't provide enough arguments, ${msg.author}!`);
+  
+        }else if (args[1] === client.user.id){
   
           msg.channel.send(`You can't provide bot's id, ${msg.author}!`);
   
         }else{
 
-          let index = participants[parseInt(args[1])].findParticipant(args[0], '');
-          participants[parseInt(args[1])].deleteParticipant(index, msg);
+          let index = participants[parseInt(args[0])-1].findParticipant(args[1], '');
+          participants[parseInt(args[0])-1].deleteParticipant(index, msg);
 
         }
       }
@@ -297,6 +194,133 @@ client.on('message', msg => {
   }
 
 });
+
+async function startTrial(msg, channel, args){
+  var num = trialsCounter;
+  trialsCounter++;
+
+  if(msg != undefined){
+    msg.delete();
+  }
+
+  participants[num] = new ListParticipants(args[0], parseInt(args[1]), `${args[2]} ${args[3]}`);
+  let pollEmbed = new Discord.MessageEmbed()
+    .setTitle(`Trial nº ${trialsCounter}: ${participants[num].name}`)
+    .addField('Day and time (CEST)', `${participants[num].daytime}`, false)
+    .addFields(
+      { name: 'Tanks', value: `${participants[num].tMax}`, inline: true },
+      { name: 'Healers', value: '2', inline: true },
+      { name: 'Damage Dealers', value: `${participants[num].ddMax}`, inline: true },
+    )
+
+  channel.send(pollEmbed).then(async function (messageReaction) {
+    
+    await messageReaction.react('🛡️');
+    await messageReaction.react('🚑');
+    await messageReaction.react('⚔️');
+    await messageReaction.react('🏹');
+    
+    const filter = (reaction, user) => {
+      if(adminID.includes(user.id) && reaction.emoji.name == '🛑'){
+        return true;
+      }
+      
+      if(messageReaction.author.id != user.id){
+        
+        var verify = participants[num].emojisCounter(user.id, reaction.emoji.name);
+        
+        if(verify == true){
+          return true;
+        }else if(verify == false && participants[num].findParticipant(user.id, reaction.emoji.name) == undefined){
+          reaction.users.remove(user.id);
+        }
+
+        if(verify == false){
+          participants[num].revert(reaction.emoji.name);
+        }
+      }
+
+      if(participants[num].findParticipant(user.id, '') != undefined){
+        var name = reaction.emoji.name;
+        const userReactions = messageReaction.reactions.cache.filter(reaction => reaction.users.cache.has(user.id));
+
+        try {
+          for (const reaction of userReactions.values()) {
+            if(reaction.emoji.name === name && participants[num].findParticipant(user.id, reaction.emoji.name) == undefined){
+              reaction.users.remove(user.id);
+            }
+          }
+        } catch (error) {
+          console.error('Failed to remove reactions.');
+        }
+      }
+      return false;
+    };
+    
+    const collector = messageReaction.createReactionCollector(filter, { });
+    
+    collector.on('collect', (reaction, user) => {
+      if(reaction.emoji.name != '🛑'){
+        participants[num].addParticipant(user.id, reaction.emoji.name);
+        console.log(`Collected ${reaction.emoji.name} from ${user.tag}`);
+        messageReaction.channel.send(`${messageReaction.guild.members.cache.find(users => users.id == user.id)} signed up for **${participants[num].name}** as ${reaction.emoji.name}`);
+      }else{
+        collector.stop('Collector stopped');
+      }
+
+      if(participants[num].counter === maxSize){
+        collector.stop('Collector stopped');
+      }
+    });
+
+    collector.on('end', (collected, reason) => {
+      if (reason && reason === 'Collector stopped') {
+        console.log('Collector has been stopped manually');
+        participants[num].listParticipants(messageReaction);
+      }
+    });
+  });
+}
+
+function recursiveTrial(channel){
+  let message = undefined;
+  let fields;
+
+  setTimeout(function(){ channel.send(`Trial nº ${trialsCounter+1}: type name, number of tanks, date and time`).then(()=>{
+    channel.awaitMessages(message=>(adminID.includes(message.author.id)),{max: 1, time: 30000}).then(collected => {
+      
+      if(collected.first().content != "cancel"){
+        message = collected.first().content;
+        
+        fields = message.split(" ");
+        startTrial(undefined, channel, fields);
+        recursiveTrial(channel);
+      }else{
+        channel.send("Operation cancelled");
+      }
+      
+      }).catch(() => {
+          channel.send('No answer after 30 seconds, operation canceled.');
+      });
+    });
+  }, 5000);
+}
+
+let scheduledTrial = new cron.CronJob('50 46 15 * * *', ()=>{
+  
+  if(guildID != undefined){
+
+    let guild = client.guilds.cache.get(guildID);
+    let channel = guild.channels.cache.get(channelID);
+    let message = undefined;
+    let fields;
+    
+    recursiveTrial(channel);
+
+  }
+});
+
+scheduledTrial.start();
 
 /*let edgyTurn = new cron.CronJob('00 00 00 * * *', () => {
   if(guildID != undefined){
@@ -309,117 +333,6 @@ client.on('message', msg => {
 });
 
 edgyTurn.start();*/
-
-/*let trials = new cron.CronJob('00 28 17 * * 04', async function (){
-  
-  if(guildID != undefined){
-    let guild = client.guilds.cache.get(guildID);
-    let channel = guild.channels.cache.get(channelID);
-    let message = undefined;
-    let fields;
-    let num = 0;
-    for (let num = 0; num <= 1; num++) {
-      await channel.send(`Trial number ${num}: type name and number of tanks`);
-      
-      /*while(message === undefined){
-        client.on('message', msg => {
-          if(adminID.includes(msg.author.id)){
-            message = msg.content.toString();
-            console.log(message);
-          }
-        });
-      }*/
-      /*client.on('message', msg => {
-        msg.channel.awaitMessages(m => adminID.includes(m.author.id),{max: 1, time: 5000}).then(collected => {
-                  
-          message = m.content.toString();
-          }).catch(() => {
-                  message.reply('No answer after 30 seconds, operation canceled.');
-          });
-        
-      });
-      client.on('message', msg => {
-      channel.send(`Trial number ${num}: type name and number of tanks`).then(() => {
-        channel.awaitMessages(msg => adminID.includes(msg.author.id), { max: 1, time: 5000})
-          .then(collected => {
-            message = msg.content.toString();
-          })
-          .catch(collected => {
-            channel.send('Looks like nobody got the answer this time.');
-          });
-      });
-    });
-      setTimeout(function () {
-        fields = message.split(" ");
-        isActive[num] = true;
-
-      let pollEmbed = new Discord.MessageEmbed()
-        .setTitle(fields[0])
-
-      participants[num] = new ListParticipants(fields[0], parseInt(fields[1]));
-      channel.send(pollEmbed).then(async function (messageReaction) {
-        
-      await messageReaction.react('🛡️');
-      await messageReaction.react('🚑');
-      await messageReaction.react('⚔️');
-      await messageReaction.react('🏹');
-      
-      const filter = (reaction, user) => {
-          if(messageReaction.author.id != user.id){
-            
-            var verify = participants[num].emojisCounter(user.id, reaction.emoji.name, messageReaction);
-            
-            if(verify == true){
-              return true;
-            }else if(verify == false && participants[num].findParticipant(user.id, reaction.emoji.name) == undefined){
-              reaction.users.remove(user.id);
-            }
-
-          }
-
-          if(participants[num].findParticipant(user.id, '') != undefined){
-            var name = reaction.emoji.name;
-            const userReactions = messageReaction.reactions.cache.filter(reaction => reaction.users.cache.has(user.id));
-
-            try {
-              for (const reaction of userReactions.values()) {
-                if(reaction.emoji.name === name && participants[num].findParticipant(user.id, reaction.emoji.name) == undefined){
-                  reaction.users.remove(user.id);
-                }
-              }
-            } catch (error) {
-              console.error('Failed to remove reactions.');
-            }
-          }
-          return false;
-        };
-        
-        const collector = messageReaction.createReactionCollector(filter, { });
-        
-        collector.on('collect', (reaction, user) => {
-          participants[num].addParticipant(user.id, reaction.emoji.name);
-          console.log(`Collected ${reaction.emoji.name} from ${user.tag}`);
-          messageReaction.channel.send(`${messageReaction.guild.members.cache.find(users => users.id == user.id)} signed up for ${participants[num].name} as ${reaction.emoji.name}`);
-
-          if(participants[num].counter === maxSize){
-            participants[num].listParticipants(messageReaction);
-          }
-
-        });
-
-      })
-      .catch();
-      }, 5000);
-      
-      
-
-    }
-    
-
-  }
-});
-
-trials.start();*/
 
 function selectRandomMember(){
   const members = (client.guilds.cache.get(guildID)).members.cache.filter(member => !member.user.bot).array();

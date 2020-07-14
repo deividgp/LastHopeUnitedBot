@@ -91,7 +91,6 @@ class ListParticipants {
         switch(this._participants[index].role){
           case '🛡️':
             this.subtractTank();
-            console.log(`deleted ${this._tCounter}`);
             break;
           case '🚑':
             this.subtractHealer();
