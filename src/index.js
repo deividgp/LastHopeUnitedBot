@@ -306,7 +306,7 @@ function recursiveTrial(channel){
   }, 5000);
 }
 
-let scheduledTrial = new cron.CronJob('50 46 15 * * *', ()=>{
+let scheduledTrial = new cron.CronJob('00 00 17 * * 4', ()=>{
   
   if(guildID != undefined){
 
