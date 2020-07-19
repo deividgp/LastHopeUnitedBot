@@ -13,6 +13,8 @@ var participantsCount = 0;
 //var trials = new ListTrials();
 const maxSize = 12;
 var trialsCounter = 0;
+var edgyActive = false;
+var trialsActive = false;
 
 client.on('ready', () => {
   console.log(`Logged in as ${client.user.tag}!`);
@@ -22,7 +24,7 @@ client.on('ready', () => {
   });
 });
 
-client.on('message', msg => {
+client.on('message', async msg => {
   
   if (!msg.content.startsWith(prefix) || msg.author.bot) return;
 
@@ -35,38 +37,52 @@ client.on('message', msg => {
       msg.channel.send(`${sadge} without justice there is no prevail ${sadge} and without prevail there is no life ${sadge} but afterall life is suffering and pain ${sadge} so why even have justice afterall? ${sadge}`);
       break;
     case 'cheese':
-      const kekw = msg.guild.emojis.cache.find(emoji => emoji.name === 'kekw');
-      msg.channel.send(`${kekw}`);
+      //var now = new Date();
+      //const kekw = msg.guild.emojis.cache.find(emoji => emoji.name === 'kekw');
+      //await msg.channel.send(`${kekw}`);
+      await msg.channel.send('https://cdn.discordapp.com/emojis/715902179902488597.png')
+      //var later = new Date();
+      //await msg.channel.send(`${(later.getTime()-now.getTime())/1000}`);
       break;
     case 'quint':
     case 'mike':
-      const ahegao = msg.guild.emojis.cache.find(emojis => emojis.name === 'ahegao');
-      msg.channel.send(`${ahegao}`);
+      //var now = new Date();
+      //const ahegao = msg.guild.emojis.cache.find(emojis => emojis.name === 'ahegao');
+      await msg.channel.send(`${ahegao}`);
+      //var later = new Date();
+      //await msg.channel.send(`${(later.getTime()-now.getTime())/1000}`);
       break;
     case 'nex':
-      const disgust = new Discord.MessageAttachment('https://cdn.discordapp.com/emojis/684133015043178526.png');
-      msg.channel.send(disgust);
+      //var now = new Date();
+      //const disgust = new Discord.MessageAttachment('https://cdn.discordapp.com/emojis/684133015043178526.png');
+      //await msg.channel.send(disgust);
+      await msg.channel.send('https://cdn.discordapp.com/emojis/684133015043178526.png');
+      //var later = new Date();
+      //await msg.channel.send(`${(later.getTime()-now.getTime())/1000}`);
       break;
     case 'thot':
-      const thot = new Discord.MessageAttachment('https://media1.tenor.com/images/c0086dbd46e551b5aa1ea42de6960b3b/tenor.gif?itemid=10386441');
-      msg.channel.send(thot);
+      //const thot = new Discord.MessageAttachment('https://media1.tenor.com/images/c0086dbd46e551b5aa1ea42de6960b3b/tenor.gif?itemid=10386441');
+      await msg.channel.send('https://media1.tenor.com/images/c0086dbd46e551b5aa1ea42de6960b3b/tenor.gif?itemid=10386441');
       break;
     case 'putin':
-      const putin = new Discord.MessageAttachment('https://media1.tenor.com/images/c59a419de2c2b94aa95215d575ea9a14/tenor.gif?itemid=17444588');
-      msg.channel.send(putin);
+      //const putin = new Discord.MessageAttachment('https://media1.tenor.com/images/c59a419de2c2b94aa95215d575ea9a14/tenor.gif?itemid=17444588');
+      msg.channel.send('https://media1.tenor.com/images/c59a419de2c2b94aa95215d575ea9a14/tenor.gif?itemid=17444588');
       break;
     case 'wink':
-      msg.channel.send(`:wink:`);
+      await msg.channel.send(`:wink:`);
       break;
-    case 'winkAll':
-      msg.channel.send(`:wink: ${msg.guild.members.cache.find(users => users.id == '308653237211234317')}`);
-      msg.channel.send(`:wink: ${msg.guild.members.cache.find(users => users.id == '655358675170361344')}`);
-      msg.channel.send(`:wink: ${msg.guild.members.cache.find(users => users.id == '166585626425163776')}`);
-      msg.channel.send(`:wink: ${msg.guild.members.cache.find(users => users.id == '303950858490740746')}`);
-      msg.channel.send(`:wink: ${msg.guild.members.cache.find(users => users.id == '312629007864823808')}`);
-      msg.channel.send(`:wink: ${msg.guild.members.cache.find(users => users.id == '397899899255128064')}`);
+    case 'cheesedark':
+      await msg.channel.send('https://cdn.discordapp.com/emojis/701053681616945183.gif');
       break;
-    case 'getAll':
+    case 'winkall':
+      await msg.channel.send(`:wink: ${msg.guild.members.cache.find(users => users.id == '308653237211234317')}`);
+      await msg.channel.send(`:wink: ${msg.guild.members.cache.find(users => users.id == '655358675170361344')}`);
+      await msg.channel.send(`:wink: ${msg.guild.members.cache.find(users => users.id == '166585626425163776')}`);
+      await msg.channel.send(`:wink: ${msg.guild.members.cache.find(users => users.id == '303950858490740746')}`);
+      await msg.channel.send(`:wink: ${msg.guild.members.cache.find(users => users.id == '312629007864823808')}`);
+      await msg.channel.send(`:wink: ${msg.guild.members.cache.find(users => users.id == '397899899255128064')}`);
+      break;
+    case 'getall':
       /*msg.channel.send(msg.guild.members.fetch().filter(member => !member.user.bot).size);
       .then(console.log)
       .catch(console.error);*/
@@ -88,88 +104,82 @@ client.on('message', msg => {
       case 'trials':
         guildID = msg.guild.id;
         channelID = msg.channel.id;
+        trialsActive = true;
         msg.delete();
         break;
       case 'start':
         startTrial(msg, msg.channel, args);
         break;
+      case 'dailyedgy':
+        guildID = msg.guild.id;
+        channelID = msg.channel.id;
+        edgyActive = true;
+        msg.delete();
+        break;
     }
 
     if(parseInt(args[0]) != 0 && parseInt(args[0]) <= trialsCounter){
-      //Lists all participants (!list trial)
-      if (command === 'list') {
 
-        participants[parseInt(args[0])-1].listParticipants(msg);
-      
-      //Adds a participant (!add trial userid role)
-      }else if (command === 'add') {
-  
-        if (args[1] == undefined || args[2] == undefined) {
-  
-          msg.channel.send(`You didn't provide enough arguments, ${msg.author}!`);
-  
-        }
-        else if (args[1] === client.user.id){
-  
-          msg.channel.send(`You can't provide bot's id, ${msg.author}!`);
-  
-        }else{
+      switch(command){
+        //Lists all participants (!list trial)
+        case 'list':
+          participants[parseInt(args[0])-1].listParticipants(msg);
+          break;
+        //Adds a participant (!add trial userid role)
+        case 'add':
           
-          let verify = participants[parseInt(args[0])-1].emojisCounter(args[1], args[2]);
-
-          if(verify){
-            participants[parseInt(args[0])-1].addParticipant(args[1], args[2]);
+          if (args[1] == undefined || args[2] == undefined) {
+  
+            msg.channel.send(`You didn't provide enough arguments, ${msg.author}!`);
+    
           }else{
-            participants[parseInt(args[0])-1].revert(args[2]);
-            msg.channel.send(`Can't add participant, ${msg.author}!`);
+            
+            let verify = participants[parseInt(args[0])-1].emojisCounter(args[1], args[2]);
+  
+            if(verify){
+              participants[parseInt(args[0])-1].addParticipant(args[1], args[2]);
+            }else{
+              participants[parseInt(args[0])-1].revert(args[2]);
+              msg.channel.send(`Can't add participant, ${msg.author}!`);
+            }
           }
-        }
-      //Update a participant (!update trial userid newRole)
-      }else if (command === 'update'){
-
-        if (args[1] == undefined || args[2] == undefined) {
+          break;
+        //Update a participant (!update trial userid newRole)
+        case 'update':
+          if (args[1] == undefined || args[2] == undefined) {
   
-          msg.channel.send(`You didn't provide enough arguments, ${msg.author}!`);
-  
-        }
-        else if (args[1] === client.user.id){
-  
-          msg.channel.send(`You can't provide bot's id, ${msg.author}!`);
-  
-        }else{
-          let index = participants[parseInt(args[0])-1].findParticipant(args[1], '');
-          let oldRole = participants[parseInt(args[0])-1].participants[index].role;
-          console.log(oldRole);
-          participants[parseInt(args[0])-1].deleteParticipant(index, msg);
-
-          let verify = participants[parseInt(args[0])-1].emojisCounter(args[1], args[2]);
-
-          if(verify){
-            participants[parseInt(args[0])-1].addParticipant(args[1], args[2]);
+            msg.channel.send(`You didn't provide enough arguments, ${msg.author}!`);
+    
           }else{
-            participants[parseInt(args[0])-1].revert(args[2]);
-            participants[parseInt(args[0])-1].addParticipant(args[1], oldRole);
-            msg.channel.send(`Can't update participant, ${msg.author}!`);
+            let index = participants[parseInt(args[0])-1].findParticipant(args[1], '');
+            let oldRole = participants[parseInt(args[0])-1].participants[index].role;
+            console.log(oldRole);
+            participants[parseInt(args[0])-1].deleteParticipant(index, msg);
+  
+            let verify = participants[parseInt(args[0])-1].emojisCounter(args[1], args[2]);
+  
+            if(verify){
+              participants[parseInt(args[0])-1].addParticipant(args[1], args[2]);
+            }else{
+              participants[parseInt(args[0])-1].revert(args[2]);
+              participants[parseInt(args[0])-1].addParticipant(args[1], oldRole);
+              msg.channel.send(`Can't update participant, ${msg.author}!`);
+            }
           }
-        }
-
-      //Delete a participant (!delete trial userid)
-      }else if (command === 'delete') {
-
-        if (args[1] == undefined) {
+          break;
+        //Delete a participant (!delete trial userid)
+        case 'delete':
+          if (args[1] == undefined) {
   
-          msg.channel.send(`You didn't provide enough arguments, ${msg.author}!`);
+            msg.channel.send(`You didn't provide enough arguments, ${msg.author}!`);
+    
+          }else{
   
-        }else if (args[1] === client.user.id){
+            let index = participants[parseInt(args[0])-1].findParticipant(args[1], '');
+            participants[parseInt(args[0])-1].deleteParticipant(index, msg);
   
-          msg.channel.send(`You can't provide bot's id, ${msg.author}!`);
-  
-        }else{
-
-          let index = participants[parseInt(args[0])-1].findParticipant(args[1], '');
-          participants[parseInt(args[0])-1].deleteParticipant(index, msg);
-
-        }
+          }
+          break;
       }
     }
   }
@@ -289,12 +299,10 @@ function recursiveTrial(channel){
 
 let scheduledTrial = new cron.CronJob('00 00 17 * * 4', ()=>{
   
-  if(guildID != undefined){
+  if(guildID != undefined && trialsActive){
 
     let guild = client.guilds.cache.get(guildID);
     let channel = guild.channels.cache.get(channelID);
-    let message = undefined;
-    let fields;
     
     recursiveTrial(channel);
 
@@ -303,8 +311,8 @@ let scheduledTrial = new cron.CronJob('00 00 17 * * 4', ()=>{
 
 scheduledTrial.start();
 
-/*let edgyTurn = new cron.CronJob('00 00 00 * * *', () => {
-  if(guildID != undefined){
+let edgyTurn = new cron.CronJob('00 00 22 * * *', () => {
+  if(guildID != undefined && edgyActive){
     let guild = client.guilds.cache.get(guildID);
     let channel = guild.channels.cache.get(channelID);
     let randomID = selectRandomMember();
@@ -313,7 +321,7 @@ scheduledTrial.start();
   }
 });
 
-edgyTurn.start();*/
+edgyTurn.start();
 
 function selectRandomMember(){
   const members = (client.guilds.cache.get(guildID)).members.cache.filter(member => !member.user.bot).array();
