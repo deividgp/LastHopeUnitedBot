@@ -29,92 +29,73 @@ client.on('message', msg => {
   const args = msg.content.slice(prefix.length).split(' ');
   const command = args.shift().toLowerCase();
 
-  if (command === 'justice'){
-
-    const sadge = msg.guild.emojis.cache.find(emoji => emoji.name === 'sadge');
-    msg.channel.send(`${sadge} without justice there is no prevail ${sadge} and without prevail there is no life ${sadge} but afterall life is suffering and pain ${sadge} so why even have justice afterall? ${sadge}`);
-  }
-  else if (command === 'cheese') {
-    
-    const kekw = msg.guild.emojis.cache.find(emoji => emoji.name === 'kekw');
-    msg.channel.send(`${kekw}`);
-
-  }else if (command === 'quint' || command === 'mike') {
-
-    const ahegao = msg.guild.emojis.cache.find(emojis => emojis.name === 'ahegao');
-    msg.channel.send(`${ahegao}`);
-
-  }else if (command === 'nex') {
-
-    const disgust = new Discord.MessageAttachment('https://cdn.discordapp.com/emojis/684133015043178526.png');
-    msg.channel.send(disgust);
-
-  }else if (command === 'thot') {
-
-    const thot = new Discord.MessageAttachment('https://media1.tenor.com/images/c0086dbd46e551b5aa1ea42de6960b3b/tenor.gif?itemid=10386441');
-    msg.channel.send(thot);
-    
-  }else if (command === 'putin') {
-
-    const putin = new Discord.MessageAttachment('https://media1.tenor.com/images/c59a419de2c2b94aa95215d575ea9a14/tenor.gif?itemid=17444588');
-    msg.channel.send(putin);
-
-  }else if (command === 'wink') {
-
-    msg.channel.send(`:wink:`);
-
-  }else if (command === 'brb') {
-
-    msg.channel.send(`gtg eat`);
-
-  }else if (command === 'winkall') {
-
-    msg.channel.send(`:wink: ${msg.guild.members.cache.find(users => users.id == '308653237211234317')}`);
-    msg.channel.send(`:wink: ${msg.guild.members.cache.find(users => users.id == '655358675170361344')}`);
-    msg.channel.send(`:wink: ${msg.guild.members.cache.find(users => users.id == '166585626425163776')}`);
-    msg.channel.send(`:wink: ${msg.guild.members.cache.find(users => users.id == '303950858490740746')}`);
-    msg.channel.send(`:wink: ${msg.guild.members.cache.find(users => users.id == '312629007864823808')}`);
-    msg.channel.send(`:wink: ${msg.guild.members.cache.find(users => users.id == '397899899255128064')}`);
-
-  }else if (command === 'getAll') {
-
-    /*msg.channel.send(msg.guild.members.fetch().filter(member => !member.user.bot).size);
-    .then(console.log)
-    .catch(console.error);*/
-    const members = msg.guild.members.cache.filter(member => !member.user.bot).array();
-    msg.channel.send(members.length);
-    for (let index = 0; index < members.length; index++) {
-      console.log(members[index]['user']['id']);
-    }
-
+  switch(command){
+    case 'justice':
+      const sadge = msg.guild.emojis.cache.find(emoji => emoji.name === 'sadge');
+      msg.channel.send(`${sadge} without justice there is no prevail ${sadge} and without prevail there is no life ${sadge} but afterall life is suffering and pain ${sadge} so why even have justice afterall? ${sadge}`);
+      break;
+    case 'cheese':
+      const kekw = msg.guild.emojis.cache.find(emoji => emoji.name === 'kekw');
+      msg.channel.send(`${kekw}`);
+      break;
+    case 'quint':
+    case 'mike':
+      const ahegao = msg.guild.emojis.cache.find(emojis => emojis.name === 'ahegao');
+      msg.channel.send(`${ahegao}`);
+      break;
+    case 'nex':
+      const disgust = new Discord.MessageAttachment('https://cdn.discordapp.com/emojis/684133015043178526.png');
+      msg.channel.send(disgust);
+      break;
+    case 'thot':
+      const thot = new Discord.MessageAttachment('https://media1.tenor.com/images/c0086dbd46e551b5aa1ea42de6960b3b/tenor.gif?itemid=10386441');
+      msg.channel.send(thot);
+      break;
+    case 'putin':
+      const putin = new Discord.MessageAttachment('https://media1.tenor.com/images/c59a419de2c2b94aa95215d575ea9a14/tenor.gif?itemid=17444588');
+      msg.channel.send(putin);
+      break;
+    case 'wink':
+      msg.channel.send(`:wink:`);
+      break;
+    case 'winkAll':
+      msg.channel.send(`:wink: ${msg.guild.members.cache.find(users => users.id == '308653237211234317')}`);
+      msg.channel.send(`:wink: ${msg.guild.members.cache.find(users => users.id == '655358675170361344')}`);
+      msg.channel.send(`:wink: ${msg.guild.members.cache.find(users => users.id == '166585626425163776')}`);
+      msg.channel.send(`:wink: ${msg.guild.members.cache.find(users => users.id == '303950858490740746')}`);
+      msg.channel.send(`:wink: ${msg.guild.members.cache.find(users => users.id == '312629007864823808')}`);
+      msg.channel.send(`:wink: ${msg.guild.members.cache.find(users => users.id == '397899899255128064')}`);
+      break;
+    case 'getAll':
+      /*msg.channel.send(msg.guild.members.fetch().filter(member => !member.user.bot).size);
+      .then(console.log)
+      .catch(console.error);*/
+      const members = msg.guild.members.cache.filter(member => !member.user.bot).array();
+      msg.channel.send(members.length);
+      for (let index = 0; index < members.length; index++) {
+        console.log(members[index]['user']['id']);
+      }
+      break;
   }
 
   /*Admin only commands*/
   if(adminID.includes(msg.author.id)){
 
-    if(command == 'changepre'){
-
-      prefix = args[0];
-
-    }else if(command == 'trials'){
-      
-      guildID = msg.guild.id;
-      channelID = msg.channel.id;
-
-    }else if(command == 'start'){
-      startTrial(msg, msg.channel, args);
+    switch(command){
+      case 'changepre':
+        prefix = args[0];
+        break;
+      case 'trials':
+        guildID = msg.guild.id;
+        channelID = msg.channel.id;
+        msg.delete();
+        break;
+      case 'start':
+        startTrial(msg, msg.channel, args);
+        break;
     }
 
     if(parseInt(args[0]) != 0 && parseInt(args[0]) <= trialsCounter){
-      /*if (command === 'end') {
-        participants[parseInt(args[0])] = undefined;
-        //participants = new ListParticipants();
-        //hCounter = 0;
-        //tCounter = 0;
-        //ddCounter = 0;
-        //ddmCounter = 0;
-        //ddrCounter = 0;
-      }*/
       //Lists all participants (!list trial)
       if (command === 'list') {
 
