@@ -95,7 +95,7 @@ client.on('message', async msg => {
   }
 
   /*Admin only commands*/
-  if(adminID.includes(msg.author.id)){
+  if(adminID.includes(msg.author.id) || msg.member.roles.find(r=>r.name === "Strong mental")){
 
     switch(command){
       case 'changepre':
