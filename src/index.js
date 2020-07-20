@@ -24,7 +24,7 @@ client.on('ready', () => {
   });
 });
 
-client.on('message', async msg => {
+client.on('message', msg => {
   
   if (!msg.content.startsWith(prefix) || msg.author.bot) return;
 
@@ -40,7 +40,7 @@ client.on('message', async msg => {
       //var now = new Date();
       //const kekw = msg.guild.emojis.cache.find(emoji => emoji.name === 'kekw');
       //await msg.channel.send(`${kekw}`);
-      await msg.channel.send('https://cdn.discordapp.com/emojis/715902179902488597.png')
+      msg.channel.send('https://cdn.discordapp.com/emojis/715902179902488597.png')
       //var later = new Date();
       //await msg.channel.send(`${(later.getTime()-now.getTime())/1000}`);
       break;
@@ -48,7 +48,7 @@ client.on('message', async msg => {
     case 'mike':
       //var now = new Date();
       //const ahegao = msg.guild.emojis.cache.find(emojis => emojis.name === 'ahegao');
-      await msg.channel.send(`${ahegao}`);
+      msg.channel.send(`${ahegao}`);
       //var later = new Date();
       //await msg.channel.send(`${(later.getTime()-now.getTime())/1000}`);
       break;
@@ -56,31 +56,31 @@ client.on('message', async msg => {
       //var now = new Date();
       //const disgust = new Discord.MessageAttachment('https://cdn.discordapp.com/emojis/684133015043178526.png');
       //await msg.channel.send(disgust);
-      await msg.channel.send('https://cdn.discordapp.com/emojis/684133015043178526.png');
+      msg.channel.send('https://cdn.discordapp.com/emojis/684133015043178526.png');
       //var later = new Date();
       //await msg.channel.send(`${(later.getTime()-now.getTime())/1000}`);
       break;
     case 'thot':
       //const thot = new Discord.MessageAttachment('https://media1.tenor.com/images/c0086dbd46e551b5aa1ea42de6960b3b/tenor.gif?itemid=10386441');
-      await msg.channel.send('https://media1.tenor.com/images/c0086dbd46e551b5aa1ea42de6960b3b/tenor.gif?itemid=10386441');
+      msg.channel.send('https://media1.tenor.com/images/c0086dbd46e551b5aa1ea42de6960b3b/tenor.gif?itemid=10386441');
       break;
     case 'putin':
       //const putin = new Discord.MessageAttachment('https://media1.tenor.com/images/c59a419de2c2b94aa95215d575ea9a14/tenor.gif?itemid=17444588');
       msg.channel.send('https://media1.tenor.com/images/c59a419de2c2b94aa95215d575ea9a14/tenor.gif?itemid=17444588');
       break;
     case 'wink':
-      await msg.channel.send(`:wink:`);
+      msg.channel.send(`:wink:`);
       break;
     case 'cheesedark':
-      await msg.channel.send('https://cdn.discordapp.com/emojis/701053681616945183.gif');
+      msg.channel.send('https://cdn.discordapp.com/emojis/701053681616945183.gif');
       break;
     case 'winkall':
-      await msg.channel.send(`:wink: ${msg.guild.members.cache.find(users => users.id == '308653237211234317')}`);
-      await msg.channel.send(`:wink: ${msg.guild.members.cache.find(users => users.id == '655358675170361344')}`);
-      await msg.channel.send(`:wink: ${msg.guild.members.cache.find(users => users.id == '166585626425163776')}`);
-      await msg.channel.send(`:wink: ${msg.guild.members.cache.find(users => users.id == '303950858490740746')}`);
-      await msg.channel.send(`:wink: ${msg.guild.members.cache.find(users => users.id == '312629007864823808')}`);
-      await msg.channel.send(`:wink: ${msg.guild.members.cache.find(users => users.id == '397899899255128064')}`);
+      msg.channel.send(`:wink: ${msg.guild.members.cache.find(users => users.id == '308653237211234317')}`);
+      msg.channel.send(`:wink: ${msg.guild.members.cache.find(users => users.id == '655358675170361344')}`);
+      msg.channel.send(`:wink: ${msg.guild.members.cache.find(users => users.id == '166585626425163776')}`);
+      msg.channel.send(`:wink: ${msg.guild.members.cache.find(users => users.id == '303950858490740746')}`);
+      msg.channel.send(`:wink: ${msg.guild.members.cache.find(users => users.id == '312629007864823808')}`);
+      msg.channel.send(`:wink: ${msg.guild.members.cache.find(users => users.id == '397899899255128064')}`);
       break;
     case 'getall':
       /*msg.channel.send(msg.guild.members.fetch().filter(member => !member.user.bot).size);
@@ -95,8 +95,7 @@ client.on('message', async msg => {
   }
 
   /*Admin only commands*/
-  if(adminID.includes(msg.author.id) || msg.member.roles.find(r=>r.name === "Strong mental")){
-
+  if(msg.member.roles.cache.has('729347913188376647') || adminID.includes(msg.author.id)){
     switch(command){
       case 'changepre':
         prefix = args[0];
@@ -109,6 +108,7 @@ client.on('message', async msg => {
         break;
       case 'start':
         startTrial(msg, msg.channel, args);
+        msg.delete();
         break;
       case 'dailyedgy':
         guildID = msg.guild.id;
@@ -189,10 +189,6 @@ client.on('message', async msg => {
 async function startTrial(msg, channel, args){
   var num = trialsCounter;
   trialsCounter++;
-
-  if(msg != undefined){
-    msg.delete();
-  }
 
   participants[num] = new ListParticipants(args[0], parseInt(args[1]), `${args[2]} ${args[3]}`);
   let pollEmbed = new Discord.MessageEmbed()
