@@ -48,7 +48,8 @@ client.on('message', msg => {
     case 'mike':
       //var now = new Date();
       //const ahegao = msg.guild.emojis.cache.find(emojis => emojis.name === 'ahegao');
-      msg.channel.send(`${ahegao}`);
+      //msg.channel.send(`${ahegao}`);
+      msg.channel.send('https://cdn.discordapp.com/emojis/715902487781048321.png?v=1');
       //var later = new Date();
       //await msg.channel.send(`${(later.getTime()-now.getTime())/1000}`);
       break;
