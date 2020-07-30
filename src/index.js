@@ -134,11 +134,11 @@ client.on('message', msg => {
             msg.channel.send(`You didn't provide enough arguments, ${msg.author}!`);
     
           }else{
-            
             let verify = participants[parseInt(args[0])-1].emojisCounter(args[1], args[2]);
   
             if(verify){
               participants[parseInt(args[0])-1].addParticipant(args[1], args[2]);
+              participants[parseInt(args[0])-1].editEmbed();
             }else{
               participants[parseInt(args[0])-1].revert(args[2]);
               msg.channel.send(`Can't add participant, ${msg.author}!`);
@@ -161,6 +161,7 @@ client.on('message', msg => {
   
             if(verify){
               participants[parseInt(args[0])-1].addParticipant(args[1], args[2]);
+              participants[parseInt(args[0])-1].editEmbed();
             }else{
               participants[parseInt(args[0])-1].revert(args[2]);
               participants[parseInt(args[0])-1].addParticipant(args[1], oldRole);
@@ -178,7 +179,7 @@ client.on('message', msg => {
   
             let index = participants[parseInt(args[0])-1].findParticipant(args[1], '');
             participants[parseInt(args[0])-1].deleteParticipant(index, msg);
-  
+            participants[parseInt(args[0])-1].editEmbed();
           }
           break;
       }
@@ -191,18 +192,19 @@ async function startTrial(msg, channel, args){
   var num = trialsCounter;
   trialsCounter++;
 
-  participants[num] = new ListParticipants(args[0], parseInt(args[1]), `${args[2]} ${args[3]}`);
-  let pollEmbed = new Discord.MessageEmbed()
+  participants[num] = new ListParticipants(args[0], parseInt(args[1]), `${args[2]} ${args[3]}`, undefined, trialsCounter);
+  let trialEmbed = new Discord.MessageEmbed()
     .setTitle(`Trial nº ${trialsCounter}: ${participants[num].name}`)
     .addField('Day and time (CEST)', `${participants[num].daytime}`, false)
     .addFields(
-      { name: 'Tanks', value: `${participants[num].tMax}`, inline: true },
-      { name: 'Healers', value: '2', inline: true },
-      { name: 'Damage Dealers', value: `${participants[num].ddMax}`, inline: true },
+      { name: 'Tanks', value: `0/${participants[num].tMax}`, inline: true },
+      { name: 'Healers', value: `0/2`, inline: true },
+      { name: 'Damage Dealers', value: `0/${participants[num].ddMax}`, inline: true },
     )
 
-  channel.send(pollEmbed).then(async function (messageReaction) {
+  channel.send(trialEmbed).then(async function (messageReaction) {
     
+    participants[num].message = messageReaction;
     await messageReaction.react('🛡️');
     await messageReaction.react('🚑');
     await messageReaction.react('⚔️');
@@ -252,6 +254,7 @@ async function startTrial(msg, channel, args){
         participants[num].addParticipant(user.id, reaction.emoji.name);
         console.log(`Collected ${reaction.emoji.name} from ${user.tag}`);
         messageReaction.channel.send(`${messageReaction.guild.members.cache.find(users => users.id == user.id)} signed up for **${participants[num].name}** as ${reaction.emoji.name}`);
+        participants[num].editEmbed();
       }else{
         collector.stop('Collector stopped');
       }

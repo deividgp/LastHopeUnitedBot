@@ -1,7 +1,8 @@
 const Participant = require('./participant.js');
+const Discord = require('discord.js');
 
 class ListParticipants {
-    constructor (name, tMax, daytime) {
+    constructor (name, tMax, daytime, message, number) {
 
       this._name = name;
       this._hMax = 2;
@@ -11,6 +12,8 @@ class ListParticipants {
       this._tCounter = 0;
       this._ddCounter = 0;
       this._daytime = daytime;
+      this._message = message;
+      this._number = number;
       this._participants = [];
       this._counter = 0;
     }
@@ -47,6 +50,14 @@ class ListParticipants {
       return this._daytime;
     }
     
+    get message(){
+      return this._message;
+    }
+    
+    set message(message){
+      this._message = message;
+    }
+
     addHealer(){
       this._hCounter++;
     }
@@ -215,6 +226,20 @@ class ListParticipants {
           }
           break;
       }
+    }
+
+    editEmbed(){
+
+      var trialEmbed = new Discord.MessageEmbed()
+      .setTitle(`Trial nº ${this._number}: ${this._name}`)
+      .addField('Day and time (CEST)', `${this._daytime}`, false)
+      .addFields(
+        { name: 'Tanks', value: `${this._tCounter}/${this._tMax}`, inline: true },
+        { name: 'Healers', value: `${this._hCounter}/2`, inline: true },
+        { name: 'Damage Dealers', value: `${this._ddCounter}/${this._ddMax}`, inline: true },
+      )
+
+      this._message.edit(trialEmbed);
     }
 }
 module.exports = ListParticipants;
