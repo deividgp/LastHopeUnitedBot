@@ -1,6 +1,7 @@
 const Discord = require('discord.js');
 const cron = require('cron');
 const ListParticipants = require('./listParticipants.js');
+const fetch = require('node-fetch');
 //const ListTrials = require('./listTrials.js');
 const client = new Discord.Client();
 const adminID = ['308653237211234317','124949555337887744'];
@@ -92,6 +93,22 @@ client.on('message', msg => {
       for (let index = 0; index < members.length; index++) {
         console.log(members[index]['user']['id']);
       }
+      break;
+    case 'simpsonsquote':
+      fetch('https://thesimpsonsquoteapi.glitch.me/quotes')
+      .then(response => response.json())
+      .then(data => {
+        let quoteEmbed = new Discord.MessageEmbed()
+          .addFields(
+            { name: 'Quote', value: `${data[0]['quote']}`, inline: false },
+            { name: 'Character', value: `${data[0]['character']}`, inline: false },
+          )
+          .setImage(`${data[0]['image']}`)
+        msg.channel.send(quoteEmbed);
+      })
+      .catch(err => {
+        console.log(err);
+      })
       break;
   }
 
