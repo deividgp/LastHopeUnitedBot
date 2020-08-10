@@ -2,9 +2,11 @@ const Discord = require('discord.js');
 const cron = require('cron');
 const ListParticipants = require('./listParticipants.js');
 const fetch = require('node-fetch');
+const express = require('express');
 //const ListTrials = require('./listTrials.js');
 const client = new Discord.Client();
 const adminID = ['308653237211234317','124949555337887744'];
+const app = express();
 var prefix = '!';
 var guildID;
 var channelID;
@@ -16,6 +18,8 @@ const maxSize = 12;
 var trialsCounter = 0;
 var edgyActive = false;
 var trialsActive = false;
+
+app.listen(8080);
 
 client.on('ready', () => {
   console.log(`Logged in as ${client.user.tag}!`);
