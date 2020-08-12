@@ -19,7 +19,7 @@ var trialsCounter = 0;
 var edgyActive = false;
 var trialsActive = false;
 
-app.listen(8080);
+app.listen(process.env.PORT);
 
 client.on('ready', () => {
   console.log(`Logged in as ${client.user.tag}!`);
@@ -37,6 +37,9 @@ client.on('message', msg => {
   const command = args.shift().toLowerCase();
 
   switch(command){
+    case 'joker':
+      msg.channel.send('https://tenor.com/view/you-wouldnt-get-it-joker-smoking-gif-15952801');
+      break;
     case 'justice':
       const sadge = msg.guild.emojis.cache.find(emoji => emoji.name === 'sadge');
       msg.channel.send(`${sadge} without justice there is no prevail ${sadge} and without prevail there is no life ${sadge} but afterall life is suffering and pain ${sadge} so why even have justice afterall? ${sadge}`);
@@ -45,7 +48,7 @@ client.on('message', msg => {
       //var now = new Date();
       //const kekw = msg.guild.emojis.cache.find(emoji => emoji.name === 'kekw');
       //await msg.channel.send(`${kekw}`);
-      msg.channel.send('https://cdn.discordapp.com/emojis/715902179902488597.png')
+      msg.channel.send('https://cdn.discordapp.com/emojis/715902179902488597.png');
       //var later = new Date();
       //await msg.channel.send(`${(later.getTime()-now.getTime())/1000}`);
       break;
@@ -81,7 +84,7 @@ client.on('message', msg => {
       msg.channel.send('https://cdn.discordapp.com/emojis/701053681616945183.gif');
       break;
     case 'winkall':
-      msg.channel.send(`:wink: ${msg.guild.members.cache.find(users => users.id == '308653237211234317')}\n:wink: ${msg.guild.members.cache.find(users => users.id == '655358675170361344')}\n:wink: ${msg.guild.members.cache.find(users => users.id == '166585626425163776')}\n:wink: ${msg.guild.members.cache.find(users => users.id == '303950858490740746')}\n:wink: ${msg.guild.members.cache.find(users => users.id == '397899899255128064')}\n:wink: ${msg.guild.members.cache.find(users => users.id == '312629007864823808')}`);
+      msg.channel.send(`:wink: ${msg.guild.members.cache.find(users => users.id == '308653237211234317')}\n:wink: ${msg.guild.members.cache.find(users => users.id == '655358675170361344')}\n:wink: ${msg.guild.members.cache.find(users => users.id == '166585626425163776')}\n:wink: ${msg.guild.members.cache.find(users => users.id == '303950858490740746')}\n:wink: ${msg.guild.members.cache.find(users => users.id == '397899899255128064')}\n:wink: ${msg.guild.members.cache.find(users => users.id == '312629007864823808')}\n:wink: ${msg.guild.members.cache.find(users => users.id == '502430932255375360')}`);
       break;
     case 'getall':
       /*msg.channel.send(msg.guild.members.fetch().filter(member => !member.user.bot).size);
