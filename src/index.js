@@ -7,7 +7,14 @@ const express = require('express');
 const client = new Discord.Client();
 const adminID = ['308653237211234317','124949555337887744'];
 const app = express();
-var prefix = '!';
+// Test token
+const token = "NzQzNzY4MDMxMDk1Njg1MTgy.XzZd9Q.TWke6071ikKWBnQGp2sWyAnzoGQ";
+// Stable token
+// const token = "NTExMTc3MzA2NDc2MzgwMTg5.Xuo6FA.kuvT0a7ama0eO8aGalioQFCAyK0";
+// Test prefix
+var prefix = '*';
+// Stable prefix
+// var prefix = '!';
 var guildID;
 var channelID;
 var participants = [];
@@ -31,6 +38,8 @@ client.on('ready', () => {
 
 client.on('message', msg => {
   
+  if(msg.content === "?XD" && !msg.author.bot) msg.channel.send("?XD");
+
   if (!msg.content.startsWith(prefix) || msg.author.bot) return;
 
   const args = msg.content.slice(prefix.length).split(' ');
@@ -347,4 +356,4 @@ function selectRandomMember(){
   return (members[Math.floor(Math.random() * members.length)]['user']['id']);
 }
 
-client.login('NTExMTc3MzA2NDc2MzgwMTg5.Xuo6FA.kuvT0a7ama0eO8aGalioQFCAyK0');
+client.login(token);
