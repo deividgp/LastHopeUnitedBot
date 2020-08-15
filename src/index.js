@@ -36,6 +36,13 @@ client.on('ready', () => {
   });
 });
 
+client.on('guildMemberAdd', member => {
+  if(!member.bot){
+    var role = member.guild.roles.cache.find(role => role.name === "Pleb");
+    member.roles.add(role);
+  }
+});
+
 client.on('message', msg => {
   
   if(msg.content === "?XD" && !msg.author.bot) msg.channel.send("?XD");
@@ -129,6 +136,10 @@ client.on('message', msg => {
       case 'changepre':
         prefix = args[0];
         break;
+      case 'assignrole':
+        assignRole(msg.channel);
+        msg.delete();
+        break;
       case 'trials':
         guildID = msg.guild.id;
         channelID = msg.channel.id;
@@ -136,7 +147,8 @@ client.on('message', msg => {
         msg.delete();
         break;
       case 'start':
-        startTrial(msg, msg.channel, args);
+        if((parseInt(args[1]) >= 1 && parseInt(args[1]) <= 2) && args[2].length == 10 && args[3].length == 5)
+          startTrial(msg.channel, args);
         msg.delete();
         break;
       case 'dailyedgy':
@@ -216,7 +228,54 @@ client.on('message', msg => {
 
 });
 
-async function startTrial(msg, channel, args){
+async function assignRole(channel){
+  let roleEmbed = new Discord.MessageEmbed()
+    .addField('Do you come from Elder Scrolls Online?', `✔️ or ❌`, false)
+  
+  
+  channel.send(roleEmbed).then(async function (messageReaction) {
+  
+    await messageReaction.react('✔️');
+    await messageReaction.react('❌');
+    
+    const filter = (reaction, user) => {
+      
+      if(messageReaction.author.id != user.id){
+        
+        switch(reaction.emoji.name){
+          case '✔️':
+            return true;
+          case '❌':
+            return true;
+        }
+
+        return false;
+      }
+    };
+    
+    const collector = messageReaction.createReactionCollector(filter, {});
+    
+    collector.on('collect', (reaction, user) => {
+      var member = channel.guild.members.cache.find(users => users.id == user.id);
+      var plebRole = channel.guild.roles.cache.find(role => role.name === "Pleb");
+      if(member.roles.cache.has(plebRole.id)){
+        switch(reaction.emoji.name){
+          case '✔️':
+            
+            var esoRole = channel.guild.roles.cache.find(role => role.name === "ESO");
+            member.roles.remove(plebRole);
+            member.roles.add(esoRole);
+            break;
+          case '❌':
+            member.roles.remove(plebRole);
+            break;
+        }
+      }
+    });
+  });
+}
+
+async function startTrial(channel, args){
   var num = trialsCounter;
   trialsCounter++;
 
@@ -229,6 +288,8 @@ async function startTrial(msg, channel, args){
       { name: 'Healers', value: `0/2`, inline: true },
       { name: 'Damage Dealers', value: `0/${participants[num].ddMax}`, inline: true },
     )
+  
+  var time = Math.abs(new Date() - new Date(participants[num].daytime + ":00"));
 
   channel.send(trialEmbed).then(async function (messageReaction) {
     
@@ -247,13 +308,13 @@ async function startTrial(msg, channel, args){
         
         var verify = participants[num].emojisCounter(user.id, reaction.emoji.name);
         
-        if(verify == true){
+        if(verify){
           return true;
-        }else if(verify == false && participants[num].findParticipant(user.id, reaction.emoji.name) == undefined){
+        }else if(!verify && participants[num].findParticipant(user.id, reaction.emoji.name) == undefined){
           reaction.users.remove(user.id);
         }
 
-        if(verify == false){
+        if(!verify){
           participants[num].revert(reaction.emoji.name);
         }
       }
@@ -275,7 +336,7 @@ async function startTrial(msg, channel, args){
       return false;
     };
     
-    const collector = messageReaction.createReactionCollector(filter, { });
+    const collector = messageReaction.createReactionCollector(filter, { time: time });
     
     collector.on('collect', (reaction, user) => {
       if(reaction.emoji.name != '🛑'){
@@ -295,8 +356,10 @@ async function startTrial(msg, channel, args){
     collector.on('end', (collected, reason) => {
       if (reason && reason === 'Collector stopped') {
         console.log('Collector has been stopped manually');
-        participants[num].listParticipants(messageReaction);
+      }else{
+        console.log('Collector has run out of time');
       }
+      participants[num].listParticipants(messageReaction);
     });
   });
 }
@@ -312,7 +375,7 @@ function recursiveTrial(channel){
         message = collected.first().content;
         
         fields = message.split(" ");
-        startTrial(undefined, channel, fields);
+        startTrial(channel, fields);
         recursiveTrial(channel);
       }else{
         channel.send("Operation cancelled");
