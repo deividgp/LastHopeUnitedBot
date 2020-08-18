@@ -3,6 +3,8 @@ const cron = require('cron');
 const ListParticipants = require('./listParticipants.js');
 const fetch = require('node-fetch');
 const express = require('express');
+const {Translate} = require('@google-cloud/translate').v2;
+const translate = new Translate();
 //const ListTrials = require('./listTrials.js');
 const client = new Discord.Client();
 const adminID = ['308653237211234317','124949555337887744'];
@@ -127,6 +129,9 @@ client.on('message', msg => {
       .catch(err => {
         console.log(err);
       })
+      break;
+    case 'translate':
+      translateText(args[0]);
       break;
   }
 
@@ -272,6 +277,18 @@ async function assignRole(channel){
         }
       }
     });
+  });
+}
+
+async function translateText(text) {
+  // Translates the text into the target language. "text" can be a string for
+  // translating a single piece of text, or an array of strings for translating
+  // multiple texts.
+  let [translations] = await translate.translate(text, "en");
+  translations = Array.isArray(translations) ? translations : [translations];
+  console.log('Translations:');
+  translations.forEach((translation, i) => {
+    console.log(`${text[i]} => (${target}) ${translation}`);
   });
 }
 
