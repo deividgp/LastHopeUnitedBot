@@ -41,11 +41,18 @@ client.on('ready', () => {
     url: "https://www.twitch.tv/deividgp"
   });
 
-  client.channels.fetch('658353140000620546')
+  /*client.channels.fetch('658353140000620546')
     .then(channel => {
       channel.send(`${prefix}assignrole 744166758813794454`);
     })
-    .catch(console.error);
+    .catch(console.error);*/
+
+  client.channels.fetch('744202016024297472')
+  .then(channel => {
+    channel.send(`${prefix}assignrole 682206766456373352`);
+    channel.send(`${prefix}assignrole 675006815091687425`);
+  })
+  .catch(console.error);
 });
 
 client.on('guildMemberAdd', member => {
@@ -455,7 +462,7 @@ function recursiveTrial(channel) {
   }, 5000);
 }
 
-let scheduledTrial = new cron.CronJob('00 00 19 * * 4', () => {
+let scheduledTrial = new cron.CronJob('00 00 17 * * 4', () => {
 
   if (guildID != undefined && trialsActive) {
 
@@ -469,7 +476,7 @@ let scheduledTrial = new cron.CronJob('00 00 19 * * 4', () => {
 
 scheduledTrial.start();
 
-let edgyTurn = new cron.CronJob('00 00 00 * * *', () => {
+let edgyTurn = new cron.CronJob('00 00 22 * * *', () => {
   if (guildID != undefined && edgyActive) {
     let guild = client.guilds.cache.get(guildID);
     let channel = guild.channels.cache.get(channelID);
