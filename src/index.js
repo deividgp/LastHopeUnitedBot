@@ -12,7 +12,6 @@ const translate = new Translate();
 //const ListTrials = require('./listTrials.js');
 const client = new Discord.Client();
 const adminID = ['308653237211234317', '124949555337887744'];
-const app = express();
 // Test token
 // const token = "NzQzNzY4MDMxMDk1Njg1MTgy.XzZd9Q.TWke6071ikKWBnQGp2sWyAnzoGQ";
 // Stable token
@@ -28,16 +27,15 @@ var participantsCount = 0;
 //var participants;
 //var trials = new ListTrials();
 const maxSize = 12;
+const roles = ['🛡️','🚑','⚔️','🏹'];
 var trialsCounter = 0;
 var edgyActive = false;
 var trialsActive = false;
 
-app.listen(process.env.PORT);
-
 client.on('ready', () => {
   console.log(`Logged in as ${client.user.tag}!`);
-  client.user.setActivity("stabbing pizza", {
-    type: "STREAMING",
+  client.user.setActivity("!help", {
+    type: "WATCHING",
     url: "https://www.twitch.tv/deividgp"
   });
 
@@ -197,109 +195,111 @@ client.on('message', async msg => {
         )
       msg.channel.send(helpEmbed);
       break;
-  }
+    default:
 
-  /*Strong mental only commands*/
-  if (msg.member.hasPermission("ADMINISTRATOR")) {
-    switch (command) {
-      // assignrole roleID
-      case 'assignrole':
-        assignRole(msg.channel, args[0]);
-        msg.delete();
-        break;
-    }
-  }
-
-  /*Strong mental only commands*/
-  if (msg.member.roles.cache.has('729347913188376647') || adminID.includes(msg.author.id)) {
-    switch (command) {
-      /*case 'changepre':
-        prefix = args[0];
-        break;*/
-      case 'trials':
-        guildID = msg.guild.id;
-        channelID = msg.channel.id;
-        trialsActive = true;
-        msg.delete();
-        break;
-      case 'starttrial':
-        if ((parseInt(args[1]) >= 1 && parseInt(args[1]) <= 2) && args[2].length == 10 && args[3].length == 5)
-          startTrial(msg.channel, args);
-        msg.delete();
-        break;
-      case 'dailyedgy':
-        guildID = msg.guild.id;
-        channelID = msg.channel.id;
-        edgyActive = true;
-        msg.delete();
-        break;
-    }
-
-    if (parseInt(args[0]) != 0 && parseInt(args[0]) <= trialsCounter) {
-
-      switch (command) {
-        //Lists all participants (!list trialid)
-        case 'list':
-          participants[parseInt(args[0]) - 1].listParticipants(msg);
-          break;
-        //Adds a participant (!add trialid userid role)
-        case 'add':
-
-          if (args[1] == undefined || args[2] == undefined) {
-
-            msg.channel.send(`You didn't provide enough arguments, ${msg.author}!`);
-
-          } else {
-            let verify = participants[parseInt(args[0]) - 1].emojisCounter(args[1], args[2]);
-
-            if (verify) {
-              participants[parseInt(args[0]) - 1].addParticipant(args[1], args[2]);
-              participants[parseInt(args[0]) - 1].editEmbed();
-            } else {
-              participants[parseInt(args[0]) - 1].revert(args[2]);
-              msg.channel.send(`Can't add participant, ${msg.author}!`);
-            }
-          }
-          break;
-        //Update a participant (!update trialid userid newRole)
-        case 'update':
-          if (args[1] == undefined || args[2] == undefined) {
-
-            msg.channel.send(`You didn't provide enough arguments, ${msg.author}!`);
-
-          } else {
-            let index = participants[parseInt(args[0]) - 1].findParticipant(args[1], '');
-            let oldRole = participants[parseInt(args[0]) - 1].participants[index].role;
-            console.log(oldRole);
-            participants[parseInt(args[0]) - 1].deleteParticipant(index, msg);
-
-            let verify = participants[parseInt(args[0]) - 1].emojisCounter(args[1], args[2]);
-
-            if (verify) {
-              participants[parseInt(args[0]) - 1].addParticipant(args[1], args[2]);
-              participants[parseInt(args[0]) - 1].editEmbed();
-            } else {
-              participants[parseInt(args[0]) - 1].revert(args[2]);
-              participants[parseInt(args[0]) - 1].addParticipant(args[1], oldRole);
-              msg.channel.send(`Can't update participant, ${msg.author}!`);
-            }
-          }
-          break;
-        //Delete a participant (!delete trialid userid)
-        case 'delete':
-          if (args[1] == undefined) {
-
-            msg.channel.send(`You didn't provide enough arguments, ${msg.author}!`);
-
-          } else {
-
-            let index = participants[parseInt(args[0]) - 1].findParticipant(args[1], '');
-            participants[parseInt(args[0]) - 1].deleteParticipant(index, msg);
-            participants[parseInt(args[0]) - 1].editEmbed();
-          }
-          break;
+      /*Strong mental only commands*/
+      if (msg.member.hasPermission("ADMINISTRATOR")) {
+        switch (command) {
+          // assignrole roleID
+          case 'assignrole':
+            assignRole(msg.channel, args[0]);
+            msg.delete();
+            break;
+        }
       }
-    }
+
+      /*Strong mental only commands*/
+      if (msg.member.roles.cache.has('729347913188376647') || adminID.includes(msg.author.id)) {
+        switch (command) {
+          /*case 'changepre':
+            prefix = args[0];
+            break;*/
+          case 'trials':
+            guildID = msg.guild.id;
+            channelID = msg.channel.id;
+            trialsActive = true;
+            msg.delete();
+            break;
+          case 'starttrial':
+            if ((parseInt(args[1]) >= 1 && parseInt(args[1]) <= 2) && args[2].length == 10 && args[3].length == 5)
+              startTrial(msg.channel, args);
+            msg.delete();
+            break;
+          case 'dailyedgy':
+            guildID = msg.guild.id;
+            channelID = msg.channel.id;
+            edgyActive = true;
+            msg.delete();
+            break;
+        }
+
+        if (parseInt(args[0]) != 0 && parseInt(args[0]) <= trialsCounter) {
+
+          switch (command) {
+            //Lists all participants (!list trialid)
+            case 'list':
+              participants[parseInt(args[0]) - 1].listParticipants(msg);
+              break;
+            //Adds a participant (!add trialid userid role)
+            case 'add':
+
+              if (args[1] == undefined || args[2] == undefined) {
+
+                msg.channel.send(`You didn't provide enough arguments, ${msg.author}!`);
+
+              } else {
+                let verify = participants[parseInt(args[0]) - 1].emojisCounter(args[1], args[2]);
+
+                if (verify) {
+                  participants[parseInt(args[0]) - 1].addParticipant(args[1], args[2]);
+                  participants[parseInt(args[0]) - 1].editEmbed();
+                } else {
+                  participants[parseInt(args[0]) - 1].revert(args[2]);
+                  msg.channel.send(`Can't add participant, ${msg.author}!`);
+                }
+              }
+              break;
+            //Update a participant (!update trialid userid newRole)
+            case 'update':
+              if (args[1] == undefined || args[2] == undefined) {
+
+                msg.channel.send(`You didn't provide enough arguments, ${msg.author}!`);
+
+              } else {
+                let index = participants[parseInt(args[0]) - 1].findParticipant(args[1], '');
+                let oldRole = participants[parseInt(args[0]) - 1].participants[index].role;
+                participants[parseInt(args[0]) - 1].deleteParticipant(index, msg);
+
+                let verify = participants[parseInt(args[0]) - 1].emojisCounter(args[1], args[2]);
+
+                if (verify) {
+                  participants[parseInt(args[0]) - 1].addParticipant(args[1], args[2]);
+                  participants[parseInt(args[0]) - 1].editEmbed();
+                } else {
+                  participants[parseInt(args[0]) - 1].revert(args[2]);
+                  participants[parseInt(args[0]) - 1].addParticipant(args[1], oldRole);
+                  msg.channel.send(`Can't update participant, ${msg.author}!`);
+                }
+              }
+              break;
+            //Delete a participant (!delete trialid userid)
+            case 'delete':
+              if (args[1] == undefined) {
+
+                msg.channel.send(`You didn't provide enough arguments, ${msg.author}!`);
+
+              } else {
+
+                let index = participants[parseInt(args[0]) - 1].findParticipant(args[1], '');
+                participants[parseInt(args[0]) - 1].deleteParticipant(index, msg);
+                participants[parseInt(args[0]) - 1].editEmbed();
+              }
+              break;
+          }
+        }
+      }
+
+      break;
   }
 
 });
@@ -367,10 +367,9 @@ async function startTrial(channel, args) {
   channel.send(trialEmbed).then(async function (messageReaction) {
 
     participants[num].message = messageReaction;
-    await messageReaction.react('🛡️');
-    await messageReaction.react('🚑');
-    await messageReaction.react('⚔️');
-    await messageReaction.react('🏹');
+    for (let index = 0; index < roles.length; index++) {
+      await messageReaction.react(roles[index]);
+    }
 
     const filter = (reaction, user) => {
       if (adminID.includes(user.id) && reaction.emoji.name == '🛑') {
@@ -383,12 +382,12 @@ async function startTrial(channel, args) {
 
         if (verify) {
           return true;
-        } else if (!verify && participants[num].findParticipant(user.id, reaction.emoji.name) == undefined) {
-          reaction.users.remove(user.id);
-        }
-
-        if (!verify) {
+        } else {
           participants[num].revert(reaction.emoji.name);
+        }
+        // Condition to make sure the bot will just delete unlisted reactions
+        if (!verify && participants[num].findParticipant(user.id, reaction.emoji.name) == undefined) {
+          reaction.users.remove(user.id);
         }
       }
 
@@ -415,13 +414,73 @@ async function startTrial(channel, args) {
       if (reaction.emoji.name != '🛑') {
         participants[num].addParticipant(user.id, reaction.emoji.name);
         console.log(`Collected ${reaction.emoji.name} from ${user.tag}`);
-        messageReaction.channel.send(`${messageReaction.guild.members.cache.find(users => users.id == user.id)} signed up for **${participants[num].name}** as ${reaction.emoji.name}`);
         participants[num].editEmbed();
-      } else {
-        collector.stop('Collector stopped');
-      }
+        messageReaction.channel.send(`${messageReaction.guild.members.cache.find(users => users.id == user.id)} signed up for **${participants[num].name}** as ${reaction.emoji.name}`).then(async function (messageRole) {
+          var userRole = user;
+          var reactionRole = reaction.emoji.name;
+          await messageRole.react('🗑️');
+          for (let index = 0; index < roles.length; index++) {
+            if(roles[index] != reactionRole)
+              await messageRole.react(roles[index]);
+          }
+          
+          const filterRole = (reaction, user) => {
 
-      if (participants[num].counter === maxSize) {
+            if (messageRole.author.id != user.id && userRole.id == user.id) {
+      
+              switch (reaction.emoji.name) {
+                case '🗑️':
+                  return true;
+                default:
+                  if(reaction.emoji.name != reactionRole && roles.includes(reaction.emoji.name)){
+
+                    let index = participants[num].findParticipant(user.id, '');
+                    let oldRole = participants[num].participants[index].role;
+                    participants[num].deleteParticipant(index, messageRole);
+
+                    let verify = participants[num].emojisCounter(user.id, reaction.emoji.name);
+
+                    if (verify) {
+                      return true;
+                    } else {
+                      participants[num].revert(reaction.emoji.name);
+                      participants[num].addParticipant(user.id, oldRole);
+                      reaction.users.remove(user.id);
+                    }
+                  }
+
+              }
+            }else if(messageRole.author.id != user.id){
+              reaction.users.remove(user.id);
+            }
+            
+            return false;
+          };
+
+          const collectorRole = messageRole.createReactionCollector(filterRole, {});
+
+          collectorRole.on('collect', async (reaction, user) => {
+            switch (reaction.emoji.name) {
+              case '🗑️':
+                let index = participants[num].findParticipant(user.id, '');
+                participants[num].deleteParticipant(index, messageRole);
+                messageRole.delete();
+                participants[num].editEmbed();
+                break;
+              default:
+                participants[num].addParticipant(user.id, reaction.emoji.name);
+                participants[num].editEmbed();
+                await messageRole.reactions.cache.get(reaction.emoji.name).remove().catch(error => console.error('Failed to remove reactions: ', error));
+                messageRole.react(reactionRole);
+                reactionRole = reaction.emoji.name;
+                messageRole.edit(`${messageRole.guild.members.cache.find(users => users.id == user.id)} signed up for **${participants[num].name}** as ${reactionRole}`);
+                //*starttrial adasd 2 08/22/2020 18:00
+                break;
+            }
+          });
+        });
+        
+      } else {
         collector.stop('Collector stopped');
       }
     });
