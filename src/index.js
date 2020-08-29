@@ -12,14 +12,6 @@ const translate = new Translate();
 //const ListTrials = require('./listTrials.js');
 const client = new Discord.Client();
 const adminID = ['308653237211234317', '124949555337887744'];
-// Test token
-// const token = "NzQzNzY4MDMxMDk1Njg1MTgy.XzZd9Q.TWke6071ikKWBnQGp2sWyAnzoGQ";
-// Stable token
-// const token = "NTExMTc3MzA2NDc2MzgwMTg5.Xuo6FA.kuvT0a7ama0eO8aGalioQFCAyK0";
-// Test prefix
-// var prefix = '*';
-// Stable prefix
-// var prefix = '!';
 var guildID;
 var channelID;
 var participants = [];
@@ -28,14 +20,15 @@ var participantsCount = 0;
 //var trials = new ListTrials();
 const maxSize = 12;
 const roles = ['🛡️','🚑','⚔️','🏹'];
+const specificRole = "Strong mental";
 var trialsCounter = 0;
 var edgyActive = false;
 var trialsActive = false;
 
 client.on('ready', () => {
   console.log(`Logged in as ${client.user.tag}!`);
-  client.user.setActivity("!help", {
-    type: "WATCHING",
+  client.user.setActivity("stabbing pizza", {
+    type: "STREAMING",
     url: "https://www.twitch.tv/deividgp"
   });
 
@@ -47,8 +40,8 @@ client.on('ready', () => {
 
   client.channels.fetch('744202016024297472')
   .then(channel => {
-    channel.send(`${prefix}assignrole 682206766456373352`);
-    channel.send(`${prefix}assignrole 675006815091687425`);
+    assignRole(channel, "682206766456373352");
+    assignRole(channel, "675006815091687425");
   })
   .catch(console.error);
 });
@@ -62,19 +55,6 @@ client.on('guildMemberAdd', member => {
 
 client.on('message', async msg => {
 
-  const args = msg.content.slice(prefix.length).split(' ');
-  const command = args.shift().toLowerCase();
-
-  if (msg.author.bot) {
-    switch (command) {
-      // assignrole roleID
-      case 'assignrole':
-        assignRole(msg.channel, args[0]);
-        msg.delete();
-        break;
-    }
-  }
-
   if(msg.author.bot) return;
 
   if (msg.content === "?XD") msg.channel.send("?XD");
@@ -82,8 +62,8 @@ client.on('message', async msg => {
   if (!msg.content.startsWith(prefix)) return;
   //if (!msg.content.startsWith(prefix) || msg.author.bot) return;
 
-  //const args = msg.content.slice(prefix.length).split(' ');
-  //const command = args.shift().toLowerCase();
+  const args = msg.content.slice(prefix.length).split(' ');
+  const command = args.shift().toLowerCase();
 
   switch (command) {
     case 'joker':
@@ -178,6 +158,9 @@ client.on('message', async msg => {
         msg.channel.send(`${translation}`);
       });
       break;
+    case 'currentprefix':
+      msg.channel.send(`Current prefix is ${prefix}`);
+      break;
     case 'help':
       let helpEmbed = new Discord.MessageEmbed()
         .setTitle("COMMANDS ARE NOT CASE SENSITIVE")
@@ -195,108 +178,130 @@ client.on('message', async msg => {
         )
       msg.channel.send(helpEmbed);
       break;
-    default:
+    case 'assignrole':
+      msg.delete();
+      if (!msg.member.hasPermission("ADMINISTRATOR"))
+        return msg.channel.send(`Not enough permissions`);
+      assignRole(msg.channel, args[0]);
+      
+      break;
+    
+    case 'dailyedgy':
+      msg.delete();
+      if (!msg.member.hasPermission("ADMINISTRATOR"))
+        return msg.channel.send(`Not enough permissions`);
+      guildID = msg.guild.id;
+      channelID = msg.channel.id;
+      edgyActive = true;
+      break;
+    case 'changepre':
+      if (!msg.member.hasPermission("ADMINISTRATOR"))
+        return msg.channel.send(`Not enough permissions`);
+      prefix = args[0];
+      break;
+    case 'trials':
+      msg.delete();
+      if (!msg.member.roles.cache.some(role => role.name === specificRole) && !adminID.includes(msg.author))
+        return msg.channel.send(`Not enough permissions`);
+      
+      guildID = msg.guild.id;
+      channelID = msg.channel.id;
+      trialsActive = true;
+      break;
 
-      /*Strong mental only commands*/
-      if (msg.member.hasPermission("ADMINISTRATOR")) {
-        switch (command) {
-          // assignrole roleID
-          case 'assignrole':
-            assignRole(msg.channel, args[0]);
-            msg.delete();
-            break;
+    case 'starttrial':
+      msg.delete();
+      if (!msg.member.roles.cache.some(role => role.name === specificRole) && !adminID.includes(msg.author))
+        return msg.channel.send(`Not enough permissions`);
+
+      if ((parseInt(args[1]) >= 1 && parseInt(args[1]) <= 2) && args[2].length == 10 && args[3].length == 5)
+        startTrial(msg.channel, args);
+      break;
+    //Lists all participants (!list trialid)
+    case 'list':
+      if (!msg.member.roles.cache.some(role => role.name === specificRole) && !adminID.includes(msg.author))
+        return msg.channel.send(`Not enough permissions`);
+
+      if (parseInt(args[0]) == 0 || parseInt(args[0]) > trialsCounter)
+        return msg.channel.send(`The first argument isn't valid`);
+
+      participants[parseInt(args[0]) - 1].listParticipants(msg);
+      break;
+    //Adds a participant (!add trialid userid role)
+    case 'add':
+
+      if (!msg.member.roles.cache.some(role => role.name === specificRole) && !adminID.includes(msg.author))
+        return msg.channel.send(`Not enough permissions`);
+
+      if (parseInt(args[0]) == 0 || parseInt(args[0]) > trialsCounter)
+        return msg.channel.send(`The first argument is invalid`);
+      
+      if (args[1] == undefined || args[2] == undefined) {
+
+        msg.channel.send(`You didn't provide enough arguments, ${msg.author}!`);
+
+      } else {
+        let verify = participants[parseInt(args[0]) - 1].emojisCounter(args[1], args[2]);
+
+        if (verify) {
+          participants[parseInt(args[0]) - 1].addParticipant(args[1], args[2]);
+          participants[parseInt(args[0]) - 1].editEmbed();
+        } else {
+          participants[parseInt(args[0]) - 1].revert(args[2]);
+          msg.channel.send(`Can't add participant, ${msg.author}!`);
+        }
+      }
+      
+      break;
+    //Update a participant (!update trialid userid newRole)
+    case 'update':
+
+      if (!msg.member.roles.cache.some(role => role.name === specificRole) && !adminID.includes(msg.author))
+        return msg.channel.send(`Not enough permissions`);
+
+      if (parseInt(args[0]) == 0 || parseInt(args[0]) > trialsCounter)
+        return msg.channel.send(`The first argument is invalid`);
+      
+      if (args[1] == undefined || args[2] == undefined) {
+
+        msg.channel.send(`You didn't provide enough arguments, ${msg.author}!`);
+
+      } else {
+        let index = participants[parseInt(args[0]) - 1].findParticipant(args[1], '');
+        let oldRole = participants[parseInt(args[0]) - 1].participants[index].role;
+        participants[parseInt(args[0]) - 1].deleteParticipant(index, msg);
+
+        let verify = participants[parseInt(args[0]) - 1].emojisCounter(args[1], args[2]);
+
+        if (verify) {
+          participants[parseInt(args[0]) - 1].addParticipant(args[1], args[2]);
+          participants[parseInt(args[0]) - 1].editEmbed();
+        } else {
+          participants[parseInt(args[0]) - 1].revert(args[2]);
+          participants[parseInt(args[0]) - 1].addParticipant(args[1], oldRole);
+          msg.channel.send(`Can't update participant, ${msg.author}!`);
         }
       }
 
-      /*Strong mental only commands*/
-      if (msg.member.roles.cache.has('729347913188376647') || adminID.includes(msg.author.id)) {
-        switch (command) {
-          /*case 'changepre':
-            prefix = args[0];
-            break;*/
-          case 'trials':
-            guildID = msg.guild.id;
-            channelID = msg.channel.id;
-            trialsActive = true;
-            msg.delete();
-            break;
-          case 'starttrial':
-            if ((parseInt(args[1]) >= 1 && parseInt(args[1]) <= 2) && args[2].length == 10 && args[3].length == 5)
-              startTrial(msg.channel, args);
-            msg.delete();
-            break;
-          case 'dailyedgy':
-            guildID = msg.guild.id;
-            channelID = msg.channel.id;
-            edgyActive = true;
-            msg.delete();
-            break;
-        }
+      break;
+    //Delete a participant (!delete trialid userid)
+    case 'delete':
 
-        if (parseInt(args[0]) != 0 && parseInt(args[0]) <= trialsCounter) {
+      if (!msg.member.roles.cache.some(role => role.name === specificRole) && !adminID.includes(msg.author))
+        return msg.channel.send(`Not enough permissions`);
 
-          switch (command) {
-            //Lists all participants (!list trialid)
-            case 'list':
-              participants[parseInt(args[0]) - 1].listParticipants(msg);
-              break;
-            //Adds a participant (!add trialid userid role)
-            case 'add':
+      if (parseInt(args[0]) == 0 || parseInt(args[0]) > trialsCounter)
+        return msg.channel.send(`The first argument is invalid`);
 
-              if (args[1] == undefined || args[2] == undefined) {
+      if (args[1] == undefined) {
 
-                msg.channel.send(`You didn't provide enough arguments, ${msg.author}!`);
+        msg.channel.send(`You didn't provide enough arguments, ${msg.author}!`);
 
-              } else {
-                let verify = participants[parseInt(args[0]) - 1].emojisCounter(args[1], args[2]);
+      } else {
 
-                if (verify) {
-                  participants[parseInt(args[0]) - 1].addParticipant(args[1], args[2]);
-                  participants[parseInt(args[0]) - 1].editEmbed();
-                } else {
-                  participants[parseInt(args[0]) - 1].revert(args[2]);
-                  msg.channel.send(`Can't add participant, ${msg.author}!`);
-                }
-              }
-              break;
-            //Update a participant (!update trialid userid newRole)
-            case 'update':
-              if (args[1] == undefined || args[2] == undefined) {
-
-                msg.channel.send(`You didn't provide enough arguments, ${msg.author}!`);
-
-              } else {
-                let index = participants[parseInt(args[0]) - 1].findParticipant(args[1], '');
-                let oldRole = participants[parseInt(args[0]) - 1].participants[index].role;
-                participants[parseInt(args[0]) - 1].deleteParticipant(index, msg);
-
-                let verify = participants[parseInt(args[0]) - 1].emojisCounter(args[1], args[2]);
-
-                if (verify) {
-                  participants[parseInt(args[0]) - 1].addParticipant(args[1], args[2]);
-                  participants[parseInt(args[0]) - 1].editEmbed();
-                } else {
-                  participants[parseInt(args[0]) - 1].revert(args[2]);
-                  participants[parseInt(args[0]) - 1].addParticipant(args[1], oldRole);
-                  msg.channel.send(`Can't update participant, ${msg.author}!`);
-                }
-              }
-              break;
-            //Delete a participant (!delete trialid userid)
-            case 'delete':
-              if (args[1] == undefined) {
-
-                msg.channel.send(`You didn't provide enough arguments, ${msg.author}!`);
-
-              } else {
-
-                let index = participants[parseInt(args[0]) - 1].findParticipant(args[1], '');
-                participants[parseInt(args[0]) - 1].deleteParticipant(index, msg);
-                participants[parseInt(args[0]) - 1].editEmbed();
-              }
-              break;
-          }
-        }
+        let index = participants[parseInt(args[0]) - 1].findParticipant(args[1], '');
+        participants[parseInt(args[0]) - 1].deleteParticipant(index, msg);
+        participants[parseInt(args[0]) - 1].editEmbed();
       }
 
       break;
