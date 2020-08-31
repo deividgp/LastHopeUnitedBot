@@ -1,27 +1,19 @@
 const Discord = require('discord.js');
 const cron = require('cron');
-const ListParticipants = require('./listParticipants.js');
 const fetch = require('node-fetch');
-const express = require('express');
 const { Translate } = require('@google-cloud/translate').v2;
 const {
   prefix,
   token,
 } = require('../config.json');
+const ListTrials = require('./trials/listTrials.js');
 const translate = new Translate();
-//const ListTrials = require('./listTrials.js');
 const client = new Discord.Client();
+const specificRole = "Strong mental";
 const adminID = ['308653237211234317', '124949555337887744'];
 var guildID;
 var channelID;
-var participants = [];
-var participantsCount = 0;
-//var participants;
-//var trials = new ListTrials();
-const maxSize = 12;
-const roles = ['🛡️','🚑','⚔️','🏹'];
-const specificRole = "Strong mental";
-var trialsCounter = 0;
+var trials = new ListTrials();
 var edgyActive = false;
 var trialsActive = false;
 
@@ -39,11 +31,11 @@ client.on('ready', () => {
     .catch(console.error);*/
 
   client.channels.fetch('744202016024297472')
-  .then(channel => {
-    assignRole(channel, "682206766456373352");
-    assignRole(channel, "675006815091687425");
-  })
-  .catch(console.error);
+    .then(channel => {
+      assignRole(channel, "682206766456373352");
+      assignRole(channel, "675006815091687425");
+    })
+    .catch(console.error);
 });
 
 client.on('guildMemberAdd', member => {
@@ -55,10 +47,10 @@ client.on('guildMemberAdd', member => {
 
 client.on('message', async msg => {
 
-  if(msg.author.bot) return;
+  if (msg.author.bot) return;
 
   if (msg.content === "?XD") msg.channel.send("?XD");
-  
+
   if (!msg.content.startsWith(prefix)) return;
   //if (!msg.content.startsWith(prefix) || msg.author.bot) return;
 
@@ -161,6 +153,9 @@ client.on('message', async msg => {
     case 'currentprefix':
       msg.channel.send(`Current prefix is ${prefix}`);
       break;
+    case 'currentutc':
+      msg.channel.send(`${new Date()}`);
+      break;
     case 'help':
       let helpEmbed = new Discord.MessageEmbed()
         .setTitle("COMMANDS ARE NOT CASE SENSITIVE")
@@ -183,9 +178,9 @@ client.on('message', async msg => {
       if (!msg.member.hasPermission("ADMINISTRATOR"))
         return msg.channel.send(`Not enough permissions`);
       assignRole(msg.channel, args[0]);
-      
+
       break;
-    
+
     case 'dailyedgy':
       msg.delete();
       if (!msg.member.hasPermission("ADMINISTRATOR"))
@@ -201,9 +196,9 @@ client.on('message', async msg => {
       break;
     case 'trials':
       msg.delete();
-      if (!msg.member.roles.cache.some(role => role.name === specificRole) && !adminID.includes(msg.author))
+      if (!msg.member.roles.cache.some(role => role.name === specificRole) && !adminID.includes(msg.author.id))
         return msg.channel.send(`Not enough permissions`);
-      
+
       guildID = msg.guild.id;
       channelID = msg.channel.id;
       trialsActive = true;
@@ -211,86 +206,71 @@ client.on('message', async msg => {
 
     case 'starttrial':
       msg.delete();
-      if (!msg.member.roles.cache.some(role => role.name === specificRole) && !adminID.includes(msg.author))
+      if (!msg.member.roles.cache.some(role => role.name === specificRole) && !adminID.includes(msg.author.id))
         return msg.channel.send(`Not enough permissions`);
 
-      if ((parseInt(args[1]) >= 1 && parseInt(args[1]) <= 2) && args[2].length == 10 && args[3].length == 5)
-        startTrial(msg.channel, args);
+      if ((parseInt(args[1]) >= 1 && parseInt(args[1]) <= 2) && args[2].length == 10 && args[3].length == 5 && new Date() < new Date(`${args[2]} ${args[3]}`))
+        trials.addTrial(args, msg.channel);
+      //trial.startTrial(msg.channel);
+      //*starttrial adafas 2 09/30/2020 18:58
       break;
     //Lists all participants (!list trialid)
     case 'list':
-      if (!msg.member.roles.cache.some(role => role.name === specificRole) && !adminID.includes(msg.author))
+      if (!msg.member.roles.cache.some(role => role.name === specificRole) && !adminID.includes(msg.author.id))
         return msg.channel.send(`Not enough permissions`);
 
-      if (parseInt(args[0]) == 0 || parseInt(args[0]) > trialsCounter)
+      if (parseInt(args[0]) == 0 || (parseInt(args[0]) - 1) > trials._counter)
         return msg.channel.send(`The first argument isn't valid`);
 
-      participants[parseInt(args[0]) - 1].listParticipants(msg);
+      trials._trials[parseInt(args[0]) - 1].listParticipants(msg);
       break;
     //Adds a participant (!add trialid userid role)
     case 'add':
 
-      if (!msg.member.roles.cache.some(role => role.name === specificRole) && !adminID.includes(msg.author))
+      if (!msg.member.roles.cache.some(role => role.name === specificRole) && !adminID.includes(msg.author.id))
         return msg.channel.send(`Not enough permissions`);
 
-      if (parseInt(args[0]) == 0 || parseInt(args[0]) > trialsCounter)
+      if (parseInt(args[0]) == 0 || (parseInt(args[0]) - 1) > trials._counter)
         return msg.channel.send(`The first argument is invalid`);
-      
+
       if (args[1] == undefined || args[2] == undefined) {
 
         msg.channel.send(`You didn't provide enough arguments, ${msg.author}!`);
 
       } else {
-        let verify = participants[parseInt(args[0]) - 1].emojisCounter(args[1], args[2]);
-
-        if (verify) {
-          participants[parseInt(args[0]) - 1].addParticipant(args[1], args[2]);
-          participants[parseInt(args[0]) - 1].editEmbed();
-        } else {
-          participants[parseInt(args[0]) - 1].revert(args[2]);
+        let add = trials._trials[parseInt(args[0]) - 1].addParticipantFinal(args[1], args[2]);
+        if (!add)
           msg.channel.send(`Can't add participant, ${msg.author}!`);
-        }
       }
-      
+
       break;
     //Update a participant (!update trialid userid newRole)
     case 'update':
 
-      if (!msg.member.roles.cache.some(role => role.name === specificRole) && !adminID.includes(msg.author))
+      if (!msg.member.roles.cache.some(role => role.name === specificRole) && !adminID.includes(msg.author.id))
         return msg.channel.send(`Not enough permissions`);
 
-      if (parseInt(args[0]) == 0 || parseInt(args[0]) > trialsCounter)
+      if (parseInt(args[0]) == 0 || (parseInt(args[0]) - 1) > trials._counter)
         return msg.channel.send(`The first argument is invalid`);
-      
+
       if (args[1] == undefined || args[2] == undefined) {
 
         msg.channel.send(`You didn't provide enough arguments, ${msg.author}!`);
 
       } else {
-        let index = participants[parseInt(args[0]) - 1].findParticipant(args[1], '');
-        let oldRole = participants[parseInt(args[0]) - 1].participants[index].role;
-        participants[parseInt(args[0]) - 1].deleteParticipant(index, msg);
-
-        let verify = participants[parseInt(args[0]) - 1].emojisCounter(args[1], args[2]);
-
-        if (verify) {
-          participants[parseInt(args[0]) - 1].addParticipant(args[1], args[2]);
-          participants[parseInt(args[0]) - 1].editEmbed();
-        } else {
-          participants[parseInt(args[0]) - 1].revert(args[2]);
-          participants[parseInt(args[0]) - 1].addParticipant(args[1], oldRole);
+        let update = trials._trials[parseInt(args[0]) - 1].updateParticipantFinal(args[1], args[2]);
+        if(!update)
           msg.channel.send(`Can't update participant, ${msg.author}!`);
-        }
       }
 
       break;
     //Delete a participant (!delete trialid userid)
     case 'delete':
 
-      if (!msg.member.roles.cache.some(role => role.name === specificRole) && !adminID.includes(msg.author))
+      if (!msg.member.roles.cache.some(role => role.name === specificRole) && !adminID.includes(msg.author.id))
         return msg.channel.send(`Not enough permissions`);
 
-      if (parseInt(args[0]) == 0 || parseInt(args[0]) > trialsCounter)
+      if (parseInt(args[0]) == 0 || (parseInt(args[0]) - 1) > trials._counter)
         return msg.channel.send(`The first argument is invalid`);
 
       if (args[1] == undefined) {
@@ -298,10 +278,7 @@ client.on('message', async msg => {
         msg.channel.send(`You didn't provide enough arguments, ${msg.author}!`);
 
       } else {
-
-        let index = participants[parseInt(args[0]) - 1].findParticipant(args[1], '');
-        participants[parseInt(args[0]) - 1].deleteParticipant(index, msg);
-        participants[parseInt(args[0]) - 1].editEmbed();
+        trials._trials[parseInt(args[0]) - 1].deleteParticipantFinal(args[1]);
       }
 
       break;
@@ -315,7 +292,7 @@ async function assignRole(channel, roleID) {
   let roleEmbed = new Discord.MessageEmbed()
     .addField(`${role.name}?`, `✔️ if yes or ❌ if not. React to have access to most channels if you are new.`, false)
 
-  channel.send(roleEmbed).then(async function (messageReaction) {
+  channel.send(roleEmbed).then(async (messageReaction) => {
 
     await messageReaction.react('✔️');
     await messageReaction.react('❌');
@@ -353,179 +330,6 @@ async function assignRole(channel, roleID) {
   });
 }
 
-async function startTrial(channel, args) {
-  var num = trialsCounter;
-  trialsCounter++;
-
-  participants[num] = new ListParticipants(args[0], parseInt(args[1]), `${args[2]} ${args[3]}`, undefined, trialsCounter);
-  let trialEmbed = new Discord.MessageEmbed()
-    .setTitle(`Trial nº ${trialsCounter}: ${participants[num].name}`)
-    .addField('Day and time (CEST)', `${participants[num].daytime}`, false)
-    .addFields(
-      { name: 'Tanks', value: `0/${participants[num].tMax}`, inline: true },
-      { name: 'Healers', value: `0/2`, inline: true },
-      { name: 'Damage Dealers', value: `0/${participants[num].ddMax}`, inline: true },
-    )
-
-  var time = Math.abs(new Date() - new Date(participants[num].daytime + ":00"));
-
-  channel.send(trialEmbed).then(async function (messageReaction) {
-
-    participants[num].message = messageReaction;
-    for (let index = 0; index < roles.length; index++) {
-      await messageReaction.react(roles[index]);
-    }
-
-    const filter = (reaction, user) => {
-      if (adminID.includes(user.id) && reaction.emoji.name == '🛑') {
-        return true;
-      }
-
-      if (messageReaction.author.id != user.id) {
-
-        var verify = participants[num].emojisCounter(user.id, reaction.emoji.name);
-
-        if (verify) {
-          return true;
-        } else {
-          participants[num].revert(reaction.emoji.name);
-        }
-        // Condition to make sure the bot will just delete unlisted reactions
-        if (!verify && participants[num].findParticipant(user.id, reaction.emoji.name) == undefined) {
-          reaction.users.remove(user.id);
-        }
-      }
-
-      if (participants[num].findParticipant(user.id, '') != undefined) {
-        var name = reaction.emoji.name;
-        const userReactions = messageReaction.reactions.cache.filter(reaction => reaction.users.cache.has(user.id));
-
-        try {
-          for (const reaction of userReactions.values()) {
-            if (reaction.emoji.name === name && participants[num].findParticipant(user.id, reaction.emoji.name) == undefined) {
-              reaction.users.remove(user.id);
-            }
-          }
-        } catch (error) {
-          console.error('Failed to remove reactions.');
-        }
-      }
-      return false;
-    };
-
-    const collector = messageReaction.createReactionCollector(filter, { time: time });
-
-    collector.on('collect', (reaction, user) => {
-      if (reaction.emoji.name != '🛑') {
-        participants[num].addParticipant(user.id, reaction.emoji.name);
-        console.log(`Collected ${reaction.emoji.name} from ${user.tag}`);
-        participants[num].editEmbed();
-        messageReaction.channel.send(`${messageReaction.guild.members.cache.find(users => users.id == user.id)} signed up for **${participants[num].name}** as ${reaction.emoji.name}`).then(async function (messageRole) {
-          var userRole = user;
-          var reactionRole = reaction.emoji.name;
-          await messageRole.react('🗑️');
-          for (let index = 0; index < roles.length; index++) {
-            if(roles[index] != reactionRole)
-              await messageRole.react(roles[index]);
-          }
-          
-          const filterRole = (reaction, user) => {
-
-            if (messageRole.author.id != user.id && userRole.id == user.id) {
-      
-              switch (reaction.emoji.name) {
-                case '🗑️':
-                  return true;
-                default:
-                  if(reaction.emoji.name != reactionRole && roles.includes(reaction.emoji.name)){
-
-                    let index = participants[num].findParticipant(user.id, '');
-                    let oldRole = participants[num].participants[index].role;
-                    participants[num].deleteParticipant(index, messageRole);
-
-                    let verify = participants[num].emojisCounter(user.id, reaction.emoji.name);
-
-                    if (verify) {
-                      return true;
-                    } else {
-                      participants[num].revert(reaction.emoji.name);
-                      participants[num].addParticipant(user.id, oldRole);
-                      reaction.users.remove(user.id);
-                    }
-                  }
-
-              }
-            }else if(messageRole.author.id != user.id){
-              reaction.users.remove(user.id);
-            }
-            
-            return false;
-          };
-
-          const collectorRole = messageRole.createReactionCollector(filterRole, {});
-
-          collectorRole.on('collect', async (reaction, user) => {
-            switch (reaction.emoji.name) {
-              case '🗑️':
-                let index = participants[num].findParticipant(user.id, '');
-                participants[num].deleteParticipant(index, messageRole);
-                messageRole.delete();
-                participants[num].editEmbed();
-                break;
-              default:
-                participants[num].addParticipant(user.id, reaction.emoji.name);
-                participants[num].editEmbed();
-                await messageRole.reactions.cache.get(reaction.emoji.name).remove().catch(error => console.error('Failed to remove reactions: ', error));
-                messageRole.react(reactionRole);
-                reactionRole = reaction.emoji.name;
-                messageRole.edit(`${messageRole.guild.members.cache.find(users => users.id == user.id)} signed up for **${participants[num].name}** as ${reactionRole}`);
-                //*starttrial adasd 2 08/22/2020 18:00
-                break;
-            }
-          });
-        });
-        
-      } else {
-        collector.stop('Collector stopped');
-      }
-    });
-
-    collector.on('end', (collected, reason) => {
-      if (reason && reason === 'Collector stopped') {
-        console.log('Collector has been stopped manually');
-      } else {
-        console.log('Collector has run out of time');
-      }
-      participants[num].listParticipants(messageReaction);
-    });
-  });
-}
-
-function recursiveTrial(channel) {
-  let message = undefined;
-  let fields;
-
-  setTimeout(function () {
-    channel.send(`Trial nº ${trialsCounter + 1}: type name, number of tanks, date and time`).then(() => {
-      channel.awaitMessages(message => (adminID.includes(message.author.id)), { max: 1, time: 30000 }).then(collected => {
-
-        if (collected.first().content != "cancel") {
-          message = collected.first().content;
-
-          fields = message.split(" ");
-          startTrial(channel, fields);
-          recursiveTrial(channel);
-        } else {
-          channel.send("Operation cancelled");
-        }
-
-      }).catch(() => {
-        channel.send('No answer after 30 seconds, operation canceled.');
-      });
-    });
-  }, 5000);
-}
-
 let scheduledTrial = new cron.CronJob('00 00 17 * * 4', () => {
 
   if (guildID != undefined && trialsActive) {
@@ -533,7 +337,7 @@ let scheduledTrial = new cron.CronJob('00 00 17 * * 4', () => {
     let guild = client.guilds.cache.get(guildID);
     let channel = guild.channels.cache.get(channelID);
 
-    recursiveTrial(channel);
+    trials.recursiveTrial(channel);
 
   }
 });
