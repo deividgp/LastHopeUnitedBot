@@ -6,15 +6,19 @@ const { Translate } = require('@google-cloud/translate').v2;
 const {
   prefix,
   token,
+  consumer_key,
+  consumer_secret,
+  access_token,
+  access_token_secret,
 } = require('../config.json');
 const ListTrials = require('./trials/listTrials.js');
 const translate = new Translate();
 const client = new Discord.Client();
 var T = new Twit({
-  consumer_key: 'WQrCP8ZyRQ51P5tubppkaXPvh',
-  consumer_secret: 'mdZt9SVGm3oTxOSRunS0AQmmlrcB2ckXAbdvGFyx6UfETqAaFL',
-  access_token: '308503953-YLBC2cmWOMxpcU1vNd4avx2ihKqA18FHZDms3SbN',
-  access_token_secret: 'E8GdEjaZQZoZHhzrgKpTMjyxQUwqGkBOO3ztGWLZ6qV0n',
+  consumer_key,
+  consumer_secret,
+  access_token,
+  access_token_secret,
 });
 const specificRole = "Strong mental";
 const adminID = ['308653237211234317', '124949555337887744'];
@@ -275,7 +279,7 @@ client.on('message', async msg => {
       break;
     //Confirm trial participants
     case 'confirmtrial':
-
+      msg.delete();
       if (!msg.member.roles.cache.some(role => role.name === specificRole) && !adminID.includes(msg.author.id))
         return msg.channel.send(`Not enough permissions`);
 
@@ -393,7 +397,7 @@ stream.on('tweet', function (tweet) {
 });
 
 function confirmTrial(channel) {
-  
+
   channel.awaitMessages(message => (adminID.includes(message.author.id)), { max: 1, time: 30000 }).then(async collected => {
 
     if (collected.first().content != "cancel") {
@@ -410,6 +414,7 @@ function confirmTrial(channel) {
         }
       }
 
+      var counter = 0;
       await message.react('✔️');
 
       const filter = (reaction, user) => {
@@ -418,12 +423,11 @@ function confirmTrial(channel) {
           return true;
         }
 
-        if (idsConfirmation.includes(user.id) && user.id != client.user.id) {
-
-          if (reaction.emoji.name === '✔️') {
-            return true;
-          }
+        if (idsConfirmation.includes(user.id) && user.id != client.user.id && reaction.emoji.name === '✔️' && counter <= idsConfirmation.length) {
+          counter++;
+          return true;
         }
+
         return false;
       };
 
@@ -444,7 +448,7 @@ function confirmTrial(channel) {
           collector.stop('Collector stopped');
         }
       });
-      
+
     } else {
       channel.send("Operation cancelled");
     }
