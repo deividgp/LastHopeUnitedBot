@@ -1,11 +1,12 @@
 const ListParticipants = require('../participants/listParticipants.js');
 const Discord = require('discord.js');
+const moment = require('moment');
 const roles = ['🛡️', '🚑', '⚔️', '🏹'];
 const adminID = ['308653237211234317', '124949555337887744'];
 
 class Trial {
 
-  constructor(id, name, tMax, daytime, message, channel) {
+  constructor(id, name, tMax, date, message, channel) {
     this._id = id;
     this._name = name;
     this._hMax = 2;
@@ -14,7 +15,7 @@ class Trial {
     this._hCounter = 0;
     this._tCounter = 0;
     this._ddCounter = 0;
-    this._daytime = daytime;
+    this._date = date;
     this._message = message;
     this._participants = new ListParticipants();
 
@@ -53,8 +54,8 @@ class Trial {
     return this._ddCounter;
   }
 
-  get daytime() {
-    return this._daytime;
+  get date() {
+    return this._date;
   }
 
   get message() {
@@ -161,7 +162,7 @@ class Trial {
   }
 
   async listParticipants(message) {
-    await await message.channel.send(`**${this._name} at ${this._daytime}**`);
+    await await message.channel.send(`**${this._name} at ${this._date}**`);
     for (let index = 0; index < this._participants._counter; index++) {
       const element = this._participants.participants[index];
 
@@ -173,7 +174,7 @@ class Trial {
 
     var trialEmbed = new Discord.MessageEmbed()
       .setTitle(`Trial nº ${this._id + 1}: ${this._name}`)
-      .addField('Day and time (UTC)', `${this._daytime}`, false)
+      .addField('Day and time (UTC)', `${this._date}`, false)
       .addFields(
         { name: 'Tanks', value: `${this._tCounter}/${this._tMax}`, inline: true },
         { name: 'Healers', value: `${this._hCounter}/2`, inline: true },
@@ -187,14 +188,15 @@ class Trial {
 
     let trialEmbed = new Discord.MessageEmbed()
       .setTitle(`Trial nº ${this._id + 1}: ${this._name}`)
-      .addField('Day and time (UTC)', `${this._daytime}`, false)
+      .addField('Date (UTC)', `${this._date}`, false)
       .addFields(
         { name: 'Tanks', value: `0/${this._tMax}`, inline: true },
         { name: 'Healers', value: `0/2`, inline: true },
         { name: 'Damage Dealers', value: `0/${this._ddMax}`, inline: true },
       )
-
-    var time = Math.abs(new Date() - new Date(this._daytime));
+    
+    var parseDate = moment(this._date, "DD/MM/YYYY HH:mm").toDate();
+    var time = parseDate.setMinutes(parseDate.getMinutes() - 15) - new Date();
 
     channel.send(trialEmbed).then(async (messageReaction) => {
 
