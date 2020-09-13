@@ -38,14 +38,21 @@ client.on('ready', () => {
 
   /*client.channels.fetch('658353140000620546')
     .then(channel => {
-      channel.send(`${prefix}assignrole 744166758813794454`);
+      deleteMessages(channel, 5);
+      setTimeout(function(){
+        assignRole(channel, "744166758813794454");
+        assignRole(channel, "744166758813794454");
+      }, 4000);
     })
     .catch(console.error);*/
 
   client.channels.fetch('744202016024297472')
     .then(channel => {
-      assignRole(channel, "682206766456373352");
-      assignRole(channel, "675006815091687425");
+      deleteMessages(channel, 5);
+      setTimeout(function () {
+        assignRole(channel, "682206766456373352");
+        assignRole(channel, "675006815091687425");
+      }, 4000);
     })
     .catch(console.error);
 });
@@ -55,6 +62,14 @@ client.on('guildMemberAdd', member => {
     var role = member.guild.roles.cache.find(role => role.name === "Pleb");
     member.roles.add(role);
   }
+});
+
+client.on('guildMemberRemove', member => {
+  client.channels.fetch('639444161954840618')
+    .then(channel => {
+      channel.send(`Suck SpoonMan ${member.user.tag}`);
+    })
+    .catch(console.error);
 });
 
 client.on('message', async msg => {
@@ -165,6 +180,7 @@ client.on('message', async msg => {
           { name: `${prefix}delete [trialID] [userID]`, value: `Delete a member from the specified trial. Example: ${prefix}delete 308653237211234317`, inline: false },
           { name: `Admin commands`, value: `↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓`, inline: false },
           { name: `${prefix}assignRole [roleID]`, value: `Create an autoassign embed message`, inline: false },
+          { name: `${prefix}deleteMessages [messagedNº]`, value: `Remove X number of messages`, inline: false },
         )
       msg.channel.send(helpEmbed);
       break;
@@ -175,7 +191,15 @@ client.on('message', async msg => {
       assignRole(msg.channel, args[0]);
 
       break;
+    case 'deletemessages':
+      if (!msg.member.hasPermission("ADMINISTRATOR"))
+        return msg.channel.send(`Not enough permissions`);
 
+      if (parseInt(args[0]) == 0 || args[0] == undefined)
+        return msg.channel.send(`The first argument is invalid`);
+
+      deleteMessages(msg.channel, parseInt(args[0]));
+      break;
     case 'dailyedgy':
       msg.delete();
       if (!msg.member.hasPermission("ADMINISTRATOR"))
@@ -206,8 +230,7 @@ client.on('message', async msg => {
 
       if ((parseInt(args[1]) >= 1 && parseInt(args[1]) <= 2) && args[2].length == 10 && args[3].length == 5 && new Date() < new Date(`${args[2]} ${args[3]}`))
         trials.addTrial(args, msg.channel);
-      //trial.startTrial(msg.channel);
-      //*starttrial adafas 2 09/30/2020 18:58
+
       break;
     //Lists all participants (!list trialid)
     case 'list':
@@ -261,7 +284,7 @@ client.on('message', async msg => {
       break;
     //Delete a participant (!delete trialid userid)
     case 'delete':
-
+      msg.delete();
       if (!msg.member.roles.cache.some(role => role.name === specificRole) && !adminID.includes(msg.author.id))
         return msg.channel.send(`Not enough permissions`);
 
@@ -456,6 +479,16 @@ function confirmTrial(channel) {
   }).catch(() => {
     channel.send('No answer after 30 seconds, operation canceled.');
   });
+}
+
+function deleteMessages(channel, max) {
+  channel.messages.fetch({
+    limit: max
+  }).then((messages) => {
+    var msgArray = [];
+    messages.forEach(msg => msgArray.push(msg));
+    channel.bulkDelete(msgArray);
+  })
 }
 
 /*function availableUnavailable(tweet, platform){
