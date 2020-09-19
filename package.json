@@ -10,7 +10,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@google-cloud/translate": "^6.0.2",
+    "@google-cloud/translate": "^6.0.3",
     "cron": "^1.8.2",
     "discord.js": "^12.3.1",
     "express": "^4.17.1",

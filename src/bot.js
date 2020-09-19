@@ -2,6 +2,7 @@ const Discord = require('discord.js');
 const cron = require('cron');
 const fetch = require('node-fetch');
 var Twit = require('twit');
+const moment = require('moment');
 const { Translate } = require('@google-cloud/translate').v2;
 const {
   prefix,
@@ -227,8 +228,10 @@ client.on('message', async msg => {
       msg.delete();
       if (!msg.member.roles.cache.some(role => role.name === specificRole) && !adminID.includes(msg.author.id))
         return msg.channel.send(`Not enough permissions`);
+      
+      var parseDate = moment(`${args[2]} ${args[3]}`, "DD/MM/YYYY HH:mm").toDate();
 
-      if ((parseInt(args[1]) >= 1 && parseInt(args[1]) <= 2) && args[2].length == 10 && args[3].length == 5 && new Date() < new Date(`${args[2]} ${args[3]}`))
+      if ((parseInt(args[1]) >= 1 && parseInt(args[1]) <= 2) && args[2].length == 10 && args[3].length == 5 && new Date() < parseDate)
         trials.addTrial(args, msg.channel);
 
       break;

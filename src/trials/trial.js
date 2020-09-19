@@ -132,21 +132,21 @@ class Trial {
       this.editEmbed();
       return true;
     } else {
-      this.revertDelete(role, undefined);
+      this.revertDeleteParticipantFinal(role, undefined);
       return false;
     }
   }
 
   deleteParticipantFinal(id) {
     let index = this._participants.findParticipant(id, '');
-    this.revertDelete(undefined, index);
+    this.revertDeleteParticipantFinal(undefined, index);
     this.editEmbed();
   }
 
   updateParticipantFinal(id, role) {
     let index = this._participants.findParticipant(id, '');
     let oldRole = this._participants.participants[index].role;
-    this.revertDelete(undefined, index);
+    this.revertDeleteParticipantFinal(undefined, index);
 
     let verify = this.emojisCounter(id, role);
 
@@ -155,7 +155,7 @@ class Trial {
       this.editEmbed();
       return true;
     } else {
-      this.revertDelete(role, undefined);
+      this.revertDeleteParticipantFinal(role, undefined);
       this._participants.addParticipant(id, oldRole);
       return false;
     }
