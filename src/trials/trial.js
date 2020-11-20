@@ -247,10 +247,17 @@ class Trial {
           console.log(`Collected ${reaction.emoji.name} from ${user.tag}`);
           messageReaction.channel.send(`${messageReaction.guild.members.cache.find(users => users.id == user.id)} signed up for **${this._name}** as ${reaction.emoji.name}`).then(async (messageRole) => {
             var userRole = user;
+<<<<<<< HEAD
             var reactionRole = reaction;
             await messageRole.react('🗑️');
             for (let index = 0; index < roles.length; index++) {
               if (roles[index] != reactionRole.emoji.name)
+=======
+            var reactionRole = reaction.emoji.name;
+            await messageRole.react('🗑️');
+            for (let index = 0; index < roles.length; index++) {
+              if (roles[index] != reactionRole)
+>>>>>>> 69ad22ae03f7ce53d83b0e5e18a57fd292a514de
                 await messageRole.react(roles[index]);
             }
 
@@ -263,7 +270,11 @@ class Trial {
                     this.deleteParticipantFinal(user.id);
                     return true;
                   default:
+<<<<<<< HEAD
                     if (reaction.emoji.name != reactionRole.emoji.name && roles.includes(reaction.emoji.name)) {
+=======
+                    if (reaction.emoji.name != reactionRole && roles.includes(reaction.emoji.name)) {
+>>>>>>> 69ad22ae03f7ce53d83b0e5e18a57fd292a514de
                       let update = this.updateParticipantFinal(user.id, reaction.emoji.name);
 
                       if (update) {
@@ -285,17 +296,27 @@ class Trial {
             const collectorRole = messageRole.createReactionCollector(filterRole, {});
 
             collectorRole.on('collect', async (reaction, user) => {
+<<<<<<< HEAD
               reactionRole.users.remove(user.id);
               switch (reaction.emoji.name) {
                 
+=======
+              switch (reaction.emoji.name) {
+>>>>>>> 69ad22ae03f7ce53d83b0e5e18a57fd292a514de
                 case '🗑️':
                   messageRole.delete();
                   break;
                 default:
                   await messageRole.reactions.cache.get(reaction.emoji.name).remove().catch(error => console.error('Failed to remove reactions: ', error));
+<<<<<<< HEAD
                   messageRole.react(reactionRole.emoji.name);
                   reactionRole = reaction;
                   messageRole.edit(`${messageRole.guild.members.cache.find(users => users.id == user.id)} signed up for **${this._name}** as ${reactionRole.emoji.name}`);
+=======
+                  messageRole.react(reactionRole);
+                  reactionRole = reaction.emoji.name;
+                  messageRole.edit(`${messageRole.guild.members.cache.find(users => users.id == user.id)} signed up for **${this._name}** as ${reactionRole}`);
+>>>>>>> 69ad22ae03f7ce53d83b0e5e18a57fd292a514de
                   break;
               }
             });
