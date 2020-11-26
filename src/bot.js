@@ -49,10 +49,11 @@ client.on('ready', () => {
 
   client.channels.fetch('744202016024297472')
     .then(channel => {
-      deleteMessages(channel, 5);
+      deleteMessages(channel, 6);
       setTimeout(function () {
         assignRole(channel, "682206766456373352");
         assignRole(channel, "675006815091687425");
+        assignRole(channel, "764456928041500672");
       }, 4000);
     })
     .catch(console.error);
@@ -60,7 +61,7 @@ client.on('ready', () => {
 
 client.on('guildMemberAdd', member => {
   if (!member.bot) {
-    var role = member.guild.roles.cache.find(role => role.name === "Pleb");
+    var role = member.guild.roles.cache.find(role => role.id === "744202122739843112");
     member.roles.add(role);
   }
 });
