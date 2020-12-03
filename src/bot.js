@@ -3,6 +3,7 @@ const cron = require('cron');
 const fetch = require('node-fetch');
 var Twit = require('twit');
 const moment = require('moment');
+require('dotenv').config()
 const { Translate } = require('@google-cloud/translate').v2;
 const {
   prefix,
@@ -11,8 +12,10 @@ const {
   consumer_secret,
   access_token,
   access_token_secret,
-} = require('../config.json');
+} = require(`../config/${process.env.MODE}.json`);
 const ListTrials = require('./trials/listTrials.js');
+const Sheet = require('./sheet.js');
+var sheet = new Sheet();
 const translate = new Translate();
 const client = new Discord.Client();
 var T = new Twit({
@@ -215,6 +218,12 @@ client.on('message', async msg => {
         return msg.channel.send(`Not enough permissions`);
       prefix = args[0];
       break;
+    case 'sheet':
+      if (!msg.member.roles.cache.some(role => role.name === specificRole) && !adminID.includes(msg.author.id))
+        return msg.channel.send(`Not enough permissions`);
+    
+      sheet.runSheet(args[0], msg);
+      break;
     case 'trials':
       msg.delete();
       if (!msg.member.roles.cache.some(role => role.name === specificRole) && !adminID.includes(msg.author.id))
@@ -229,7 +238,7 @@ client.on('message', async msg => {
       msg.delete();
       if (!msg.member.roles.cache.some(role => role.name === specificRole) && !adminID.includes(msg.author.id))
         return msg.channel.send(`Not enough permissions`);
-      
+
       var parseDate = moment(`${args[2]} ${args[3]}`, "DD/MM/YYYY HH:mm").toDate();
 
       if ((parseInt(args[1]) >= 1 && parseInt(args[1]) <= 2) && args[2].length == 10 && args[3].length == 5 && new Date() < parseDate)

@@ -162,12 +162,12 @@ class Trial {
   }
 
   async listParticipants(message) {
-    await await message.channel.send(`**${this._name} at ${this._date}**`);
+    var msgBlock = `**${this._name} at ${this._date}**\n`;
     for (let index = 0; index < this._participants._counter; index++) {
       const element = this._participants.participants[index];
-
-      await message.channel.send(`${message.guild.members.cache.find(users => users.id == element.id)} is ${element.role}`);
+      msgBlock = msgBlock + `${message.guild.members.cache.find(users => users.id == element.id)} is ${element.role}\n`;
     }
+    await message.channel.send(msgBlock);
   }
 
   editEmbed() {
@@ -194,7 +194,7 @@ class Trial {
         { name: 'Healers', value: `0/2`, inline: true },
         { name: 'Damage Dealers', value: `0/${this._ddMax}`, inline: true },
       )
-    
+
     var parseDate = moment(this._date, "DD/MM/YYYY HH:mm").toDate();
     var time = parseDate.setMinutes(parseDate.getMinutes() - 15) - new Date();
 
@@ -287,7 +287,7 @@ class Trial {
             collectorRole.on('collect', async (reaction, user) => {
               reactionRole.users.remove(user.id);
               switch (reaction.emoji.name) {
-                
+
                 case '🗑️':
                   messageRole.delete();
                   break;

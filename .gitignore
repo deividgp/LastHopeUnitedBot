@@ -1,4 +1,5 @@
-config.json
+config/
+node_modules/
 LastHopeUnited-d4330ad6acdb.json
-node_modules
 *.jar
+.env
