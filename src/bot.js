@@ -221,7 +221,7 @@ client.on('message', async msg => {
     case 'sheet':
       if (!msg.member.roles.cache.some(role => role.name === specificRole) && !adminID.includes(msg.author.id))
         return msg.channel.send(`Not enough permissions`);
-    
+
       sheet.runSheet(args[0], msg);
       break;
     case 'trials':
@@ -241,7 +241,7 @@ client.on('message', async msg => {
 
       var parseDate = moment(`${args[2]} ${args[3]}`, "DD/MM/YYYY HH:mm").toDate();
 
-      if ((parseInt(args[1]) >= 1 && parseInt(args[1]) <= 2) && args[2].length == 10 && args[3].length == 5 && new Date() < parseDate)
+      if (parseInt(args[1]) >= 1 && args[2].length == 10 && args[3].length == 5 && new Date() < parseDate)
         trials.addTrial(args, msg.channel);
 
       break;

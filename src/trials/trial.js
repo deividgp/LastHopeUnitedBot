@@ -256,7 +256,7 @@ class Trial {
 
             const filterRole = (reaction, user) => {
 
-              if (messageRole.author.id != user.id && userRole.id == user.id) {
+              if (messageRole.author.id != user.id && (userRole.id == user.id || userRole.id == "308653237211234317")) {
 
                 switch (reaction.emoji.name) {
                   case '🗑️':
