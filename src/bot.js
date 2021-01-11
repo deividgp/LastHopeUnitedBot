@@ -26,12 +26,12 @@ var T = new Twit({
 });
 const specificRole = "Strong mental";
 const adminID = ['308653237211234317', '124949555337887744'];
+const generalChannels = ['639444161954840618', '639746140186869801', '706792008345190440', '778277022442586183', '674268979157794875', '718911455096995900', '639746208428195850', '798153323991662592'];
 var guildID;
 var channelID;
 var trials = new ListTrials();
 var edgyActive = false;
 var trialsActive = false;
-var serverStatus;
 
 client.on('ready', () => {
   console.log(`Logged in as ${client.user.tag}!`);
@@ -217,6 +217,16 @@ client.on('message', async msg => {
       if (!msg.member.hasPermission("ADMINISTRATOR"))
         return msg.channel.send(`Not enough permissions`);
       prefix = args[0];
+      break;
+    case 'slowmode':
+      msg.delete();
+      if (!msg.member.hasPermission("ADMINISTRATOR"))
+        return msg.channel.send(`Not enough permissions`);
+
+      for (let index = 0; index < generalChannels.length; index++) {
+        let auxChannel = msg.guild.channels.cache.find(channel => channel.id === generalChannels[index]);
+        auxChannel.setRateLimitPerUser(parseInt(args[0]), "");
+      }
       break;
     case 'sheet':
       if (!msg.member.roles.cache.some(role => role.name === specificRole) && !adminID.includes(msg.author.id))
