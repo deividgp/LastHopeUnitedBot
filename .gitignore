@@ -3,3 +3,4 @@ config/
 LastHopeUnited-d4330ad6acdb.json
 *.jar
 .env
+*.zip

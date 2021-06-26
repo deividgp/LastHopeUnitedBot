@@ -24,9 +24,7 @@ var T = new Twit({
   access_token,
   access_token_secret,
 });
-const specificRole = "Strong mental";
-const adminID = ['308653237211234317', '124949555337887744'];
-const generalChannels = ['639444161954840618', '639746140186869801', '706792008345190440', '778277022442586183', '674268979157794875', '718911455096995900', '639746208428195850', '798153323991662592'];
+//const generalChannels = ['639444161954840618', '639746140186869801', '706792008345190440', '778277022442586183', '674268979157794875', '718911455096995900', '639746208428195850', '798153323991662592'];
 var guildID;
 var channelID;
 var trials = new ListTrials();
@@ -133,7 +131,7 @@ client.on('message', async msg => {
       }
       break;
     case 'simpsonsquote':
-      fetch('https://thesimpsonsquoteapi.glitch.me/quotes')
+      fetch('https://simpsons-quotes-api.herokuapp.com/quotes')
         .then(response => response.json())
         .then(data => {
           let quoteEmbed = new Discord.MessageEmbed()
@@ -218,7 +216,7 @@ client.on('message', async msg => {
         return msg.channel.send(`Not enough permissions`);
       prefix = args[0];
       break;
-    case 'slowmode':
+    /*case 'slowmode':
       msg.delete();
       if (!msg.member.hasPermission("ADMINISTRATOR"))
         return msg.channel.send(`Not enough permissions`);
@@ -227,16 +225,16 @@ client.on('message', async msg => {
         let auxChannel = msg.guild.channels.cache.find(channel => channel.id === generalChannels[index]);
         auxChannel.setRateLimitPerUser(parseInt(args[0]), "");
       }
-      break;
+      break;*/
     case 'sheet':
-      if (!msg.member.roles.cache.some(role => role.name === specificRole) && !adminID.includes(msg.author.id))
+      if (!msg.member.hasPermission("ADMINISTRATOR"))
         return msg.channel.send(`Not enough permissions`);
 
       sheet.runSheet(args[0], msg);
       break;
     case 'trials':
       msg.delete();
-      if (!msg.member.roles.cache.some(role => role.name === specificRole) && !adminID.includes(msg.author.id))
+      if (!msg.member.hasPermission("ADMINISTRATOR"))
         return msg.channel.send(`Not enough permissions`);
 
       guildID = msg.guild.id;
@@ -246,7 +244,7 @@ client.on('message', async msg => {
 
     case 'starttrial':
       msg.delete();
-      if (!msg.member.roles.cache.some(role => role.name === specificRole) && !adminID.includes(msg.author.id))
+      if (!msg.member.hasPermission("ADMINISTRATOR"))
         return msg.channel.send(`Not enough permissions`);
 
       var parseDate = moment(`${args[2]} ${args[3]}`, "DD/MM/YYYY HH:mm").toDate();
@@ -257,7 +255,7 @@ client.on('message', async msg => {
       break;
     //Lists all participants (!list trialid)
     case 'list':
-      if (!msg.member.roles.cache.some(role => role.name === specificRole) && !adminID.includes(msg.author.id))
+      if (!msg.member.hasPermission("ADMINISTRATOR"))
         return msg.channel.send(`Not enough permissions`);
 
       if (parseInt(args[0]) == 0 || (parseInt(args[0]) - 1) > trials._counter)
@@ -268,7 +266,7 @@ client.on('message', async msg => {
     //Adds a participant (!add trialid userid role)
     case 'add':
 
-      if (!msg.member.roles.cache.some(role => role.name === specificRole) && !adminID.includes(msg.author.id))
+      if (!msg.member.hasPermission("ADMINISTRATOR"))
         return msg.channel.send(`Not enough permissions`);
 
       if (parseInt(args[0]) == 0 || (parseInt(args[0]) - 1) > trials._counter)
@@ -288,7 +286,7 @@ client.on('message', async msg => {
     //Update a participant (!update trialid userid newRole)
     case 'update':
 
-      if (!msg.member.roles.cache.some(role => role.name === specificRole) && !adminID.includes(msg.author.id))
+      if (!msg.member.hasPermission("ADMINISTRATOR"))
         return msg.channel.send(`Not enough permissions`);
 
       if (parseInt(args[0]) == 0 || (parseInt(args[0]) - 1) > trials._counter)
@@ -308,7 +306,7 @@ client.on('message', async msg => {
     //Delete a participant (!delete trialid userid)
     case 'delete':
       msg.delete();
-      if (!msg.member.roles.cache.some(role => role.name === specificRole) && !adminID.includes(msg.author.id))
+      if (!msg.member.hasPermission("ADMINISTRATOR"))
         return msg.channel.send(`Not enough permissions`);
 
       if (parseInt(args[0]) == 0 || (parseInt(args[0]) - 1) > trials._counter)
@@ -326,7 +324,7 @@ client.on('message', async msg => {
     //Confirm trial participants
     case 'confirmtrial':
       msg.delete();
-      if (!msg.member.roles.cache.some(role => role.name === specificRole) && !adminID.includes(msg.author.id))
+      if (!msg.member.hasPermission("ADMINISTRATOR"))
         return msg.channel.send(`Not enough permissions`);
 
       confirmTrial(msg.channel);
@@ -444,7 +442,7 @@ stream.on('tweet', function (tweet) {
 
 function confirmTrial(channel) {
 
-  channel.awaitMessages(message => (adminID.includes(message.author.id)), { max: 1, time: 30000 }).then(async collected => {
+  channel.awaitMessages(message => (message.member.hasPermission("ADMINISTRATOR")), { max: 1, time: 30000 }).then(async collected => {
 
     if (collected.first().content != "cancel") {
       message = collected.first();
@@ -465,7 +463,7 @@ function confirmTrial(channel) {
 
       const filter = (reaction, user) => {
 
-        if (adminID.includes(user.id) && reaction.emoji.name == '🛑') {
+        if (message.member.id == user.id && reaction.emoji.name == '🛑') {
           return true;
         }
 
