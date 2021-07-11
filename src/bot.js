@@ -38,23 +38,11 @@ client.on('ready', () => {
     url: "https://www.twitch.tv/deividgp"
   });
 
-  /*client.channels.fetch('658353140000620546')
-    .then(channel => {
-      deleteMessages(channel, 5);
-      setTimeout(function(){
-        assignRole(channel, "744166758813794454");
-        assignRole(channel, "744166758813794454");
-      }, 4000);
-    })
-    .catch(console.error);*/
-
-  client.channels.fetch('744202016024297472')
+  client.channels.fetch('811207960701042713')
     .then(channel => {
       deleteMessages(channel, 6);
-      setTimeout(function () {
-        assignRole(channel, "682206766456373352");
-        assignRole(channel, "675006815091687425");
-        assignRole(channel, "764456928041500672");
+      setTimeout(async function () {
+        await assignRole(channel, "811207960671813646");
       }, 4000);
     })
     .catch(console.error);
@@ -62,7 +50,7 @@ client.on('ready', () => {
 
 client.on('guildMemberAdd', member => {
   if (!member.bot) {
-    var role = member.guild.roles.cache.find(role => role.id === "744202122739843112");
+    var role = member.guild.roles.cache.find(role => role.name === "Pleb");
     member.roles.add(role);
   }
 });
@@ -328,6 +316,18 @@ client.on('message', async msg => {
         return msg.channel.send(`Not enough permissions`);
 
       confirmTrial(msg.channel);
+
+      break;
+    case 'confirmtrial':
+      msg.delete();
+      if (!msg.member.hasPermission("ADMINISTRATOR"))
+        return msg.channel.send(`Not enough permissions`);
+
+      confirmTrial(msg.channel);
+
+      break;
+    case 'server':
+    case 'servers':
 
       break;
   }

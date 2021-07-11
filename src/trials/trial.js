@@ -2,7 +2,6 @@ const ListParticipants = require('../participants/listParticipants.js');
 const Discord = require('discord.js');
 const moment = require('moment');
 const roles = ['🛡️', '🚑', '⚔️', '🏹'];
-const adminID = ['308653237211234317', '124949555337887744'];
 
 class Trial {
 
@@ -18,7 +17,7 @@ class Trial {
     this._date = date;
     this._message = message;
     this._participants = new ListParticipants();
-
+    this._busy = false;
     this.startTrial(channel);
   }
 
@@ -70,44 +69,62 @@ class Trial {
     return this._participants;
   }
 
+  get busy() {
+    return this._busy;
+  }
+
+  set busy(busy) {
+    this._busy = busy;
+  }
+
   get counter() {
     return this._counter;
   }
 
-  emojisCounter(userId, role) {
+  addRole(userId, role) {
 
     if (this._participants.findParticipant(userId, '') == undefined) {
       switch (role) {
         case '🛡️':
           this._tCounter++;
-          break;
+          return (this._tCounter <= this._tMax);
         case '🚑':
           this._hCounter++;
-          break;
+          return (this._hCounter <= this._hMax);
         case '⚔️':
           this._ddCounter++;
           //ddmCounter++;
-          break;
+          return (this._ddCounter <= this._ddMax);
         case '🏹':
           this._ddCounter++;
           //ddrCounter++;
-          break;
+          return (this._ddCounter <= this._ddMax);
       }
-
-      return ((this._hCounter <= this._hMax && role === '🚑') || (this._tCounter <= this._tMax && role === '🛡️') ||
-        (this._ddCounter <= this._ddMax && role === '⚔️') || (this._ddCounter <= this._ddMax && role === '🏹'));
     }
 
     return false;
-
   }
 
-  revertDeleteParticipantFinal(role, index) {
+  revertDeleteParticipantFinal(role, index, add) {
+
     if (index != undefined && role == undefined) {
       role = this._participants.participants[index].role;
       this._participants.deleteParticipant(index);
     }
 
+    switch (add) {
+      case true:
+        if (this._participants.findParticipant(this._participants.participants[index].id, '') == undefined) {
+          this.subtractRole(role);
+        }
+        break;
+      case false:
+        this.subtractRole(role);
+        break;
+    }
+  }
+
+  subtractRole(role){
     switch (role) {
       case '🛡️':
         this._tCounter--;
@@ -125,37 +142,39 @@ class Trial {
   }
 
   addParticipantFinal(id, role) {
-    let verify = this.emojisCounter(id, role);
+    let verify = this.addRole(id, role);
 
     if (verify) {
       this._participants.addParticipant(id, role);
       this.editEmbed();
       return true;
     } else {
-      this.revertDeleteParticipantFinal(role, undefined);
+      let index = this._participants.findParticipant(id, '');
+      this.revertDeleteParticipantFinal(role, index, true);
       return false;
     }
   }
 
   deleteParticipantFinal(id) {
     let index = this._participants.findParticipant(id, '');
-    this.revertDeleteParticipantFinal(undefined, index);
+    this.revertDeleteParticipantFinal(undefined, index, false);
     this.editEmbed();
   }
 
   updateParticipantFinal(id, role) {
     let index = this._participants.findParticipant(id, '');
     let oldRole = this._participants.participants[index].role;
-    this.revertDeleteParticipantFinal(undefined, index);
+    this.revertDeleteParticipantFinal(undefined, index, false);
 
-    let verify = this.emojisCounter(id, role);
+    let verify = this.addRole(id, role);
 
     if (verify) {
       this._participants.addParticipant(id, role);
+
       this.editEmbed();
       return true;
     } else {
-      this.revertDeleteParticipantFinal(role, undefined);
+      this.revertDeleteParticipantFinal(role, undefined, false);
       this._participants.addParticipant(id, oldRole);
       return false;
     }
@@ -205,22 +224,25 @@ class Trial {
         await messageReaction.react(roles[index]);
       }
 
-      const filter = (reaction, user) => {
-        if (adminID.includes(user.id) && reaction.emoji.name == '🛑') {
+      const filter = async (reaction, user) => {
+        /*if (reaction.emoji.name == '🛑') {
+          return true;
+        }*/
+        if (this._busy || messageReaction.author.id == user.id) {
+          await reaction.users.remove(user.id);
+          return false;
+        }
+        this._busy = true;
+
+        let add = this.addParticipantFinal(user.id, reaction.emoji.name);
+
+        if (add) {
           return true;
         }
 
-        if (messageReaction.author.id != user.id) {
-          let add = this.addParticipantFinal(user.id, reaction.emoji.name);
-
-          if (add) {
-            return true;
-          }
-
-          // Condition to make sure the bot will just delete unlisted reactions
-          if (!add && this._participants.findParticipant(user.id, reaction.emoji.name) == undefined) {
-            reaction.users.remove(user.id);
-          }
+        // Condition to make sure the bot will just delete unlisted reactions
+        if (!add && this._participants.findParticipant(user.id, reaction.emoji.name) == undefined) {
+          await reaction.users.remove(user.id);
         }
 
         if (this._participants.findParticipant(user.id, '') != undefined) {
@@ -230,13 +252,14 @@ class Trial {
           try {
             for (const reaction of userReactions.values()) {
               if (reaction.emoji.name === name && this._participants.findParticipant(user.id, reaction.emoji.name) == undefined) {
-                reaction.users.remove(user.id);
+                await reaction.users.remove(user.id);
               }
             }
           } catch (error) {
             console.error('Failed to remove reactions.');
           }
         }
+        this._busy = false;
         return false;
       };
 
@@ -253,32 +276,37 @@ class Trial {
               if (roles[index] != reactionRole.emoji.name)
                 await messageRole.react(roles[index]);
             }
+            this._busy = false;
 
-            const filterRole = (reaction, user) => {
+            const filterRole = async (reaction, user) => {
 
-              if (messageRole.author.id != user.id && (userRole.id == user.id || userRole.id == "308653237211234317")) {
-
-                switch (reaction.emoji.name) {
-                  case '🗑️':
-                    this.deleteParticipantFinal(user.id);
-                    return true;
-                  default:
-                    if (reaction.emoji.name != reactionRole.emoji.name && roles.includes(reaction.emoji.name)) {
-                      let update = this.updateParticipantFinal(user.id, reaction.emoji.name);
-
-                      if (update) {
-                        return true;
-                      } else {
-                        reaction.users.remove(user.id);
-                        return false;
-                      }
-                    }
-
+              if (this._busy || messageRole.author.id == user.id || userRole.id != user.id) {
+                if (messageRole.author.id != user.id) {
+                  await reaction.users.remove(user.id);
                 }
-              } else if (messageRole.author.id != user.id) {
-                reaction.users.remove(user.id);
+                return false;
               }
 
+              this._busy = true;
+              switch (reaction.emoji.name) {
+                case '🗑️':
+                  this.deleteParticipantFinal(user.id);
+                  return true;
+                default:
+                  if (reaction.emoji.name != reactionRole.emoji.name && roles.includes(reaction.emoji.name)) {
+                    let update = this.updateParticipantFinal(user.id, reaction.emoji.name);
+
+                    if (update) {
+                      return true;
+                    } else {
+                      await reaction.users.remove(user.id);
+                      this._busy = false;
+                      return false;
+                    }
+                  }
+              }
+
+              this._busy = false;
               return false;
             };
 
@@ -287,17 +315,17 @@ class Trial {
             collectorRole.on('collect', async (reaction, user) => {
               reactionRole.users.remove(user.id);
               switch (reaction.emoji.name) {
-
                 case '🗑️':
-                  messageRole.delete();
+                  await messageRole.delete();
                   break;
                 default:
                   await messageRole.reactions.cache.get(reaction.emoji.name).remove().catch(error => console.error('Failed to remove reactions: ', error));
-                  messageRole.react(reactionRole.emoji.name);
+                  await messageRole.react(reactionRole.emoji.name);
                   reactionRole = reaction;
-                  messageRole.edit(`${messageRole.guild.members.cache.find(users => users.id == user.id)} signed up for **${this._name}** as ${reactionRole.emoji.name}`);
+                  await messageRole.edit(`${messageRole.guild.members.cache.find(users => users.id == user.id)} signed up for **${this._name}** as ${reactionRole.emoji.name}`);
                   break;
               }
+              this._busy = false;
             });
           });
 
