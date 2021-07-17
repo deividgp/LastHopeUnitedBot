@@ -5,6 +5,7 @@ var Twit = require('twit');
 const moment = require('moment');
 require('dotenv').config()
 const { Translate } = require('@google-cloud/translate').v2;
+const http = require('https');
 const {
   prefix,
   token,
@@ -328,7 +329,27 @@ client.on('message', async msg => {
       break;
     case 'server':
     case 'servers':
+      http.get("https://live-services.elderscrollsonline.com/status/realms", function(res) {
+        let data = '',
+          json_data;
 
+        res.on('data', function(stream) {
+          data += stream;
+        });
+        res.on('end', function() {
+          json_data = JSON.parse(data);
+          var serverInfo = json_data["zos_platform_response"]["response"];
+
+          let serverEmbed = new Discord.MessageEmbed()
+            .setTitle(`Server status`)
+
+            for(var server in serverInfo){
+              serverEmbed.addField(`${server.substring(26, server.length-1)}`, `${serverInfo[server]}`, true)
+            }
+          
+          msg.channel.send(serverEmbed);
+        });
+      });
       break;
   }
 
@@ -354,6 +375,9 @@ async function assignRole(channel, roleID) {
             return true;
           case '❌':
             return true;
+          default:
+            reaction.users.remove(user.id);
+            break;
         }
 
         return false;
