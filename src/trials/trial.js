@@ -92,12 +92,8 @@ class Trial {
           this._hCounter++;
           return (this._hCounter <= this._hMax);
         case '⚔️':
-          this._ddCounter++;
-          //ddmCounter++;
-          return (this._ddCounter <= this._ddMax);
         case '🏹':
           this._ddCounter++;
-          //ddrCounter++;
           return (this._ddCounter <= this._ddMax);
       }
     }
@@ -124,7 +120,7 @@ class Trial {
     }
   }
 
-  subtractRole(role){
+  subtractRole(role) {
     switch (role) {
       case '🛡️':
         this._tCounter--;
@@ -220,8 +216,8 @@ class Trial {
     channel.send(trialEmbed).then(async (messageReaction) => {
 
       this._message = messageReaction;
-      for (let index = 0; index < roles.length; index++) {
-        await messageReaction.react(roles[index]);
+      for (const role of roles) {
+        await messageReaction.react(role);
       }
 
       const filter = async (reaction, user) => {
@@ -272,9 +268,9 @@ class Trial {
             var userRole = user;
             var reactionRole = reaction;
             await messageRole.react('🗑️');
-            for (let index = 0; index < roles.length; index++) {
-              if (roles[index] != reactionRole.emoji.name)
-                await messageRole.react(roles[index]);
+            for (const role of roles) {
+              if (role != reactionRole.emoji.name)
+                await messageRole.react(role);
             }
             this._busy = false;
 
@@ -288,22 +284,21 @@ class Trial {
               }
 
               this._busy = true;
-              switch (reaction.emoji.name) {
-                case '🗑️':
-                  this.deleteParticipantFinal(user.id);
-                  return true;
-                default:
-                  if (reaction.emoji.name != reactionRole.emoji.name && roles.includes(reaction.emoji.name)) {
-                    let update = this.updateParticipantFinal(user.id, reaction.emoji.name);
+              if (reaction.emoji.name == '🗑️') {
+                this.deleteParticipantFinal(user.id);
+                return true;
+              } else {
+                if (reaction.emoji.name != reactionRole.emoji.name && roles.includes(reaction.emoji.name)) {
+                  let update = this.updateParticipantFinal(user.id, reaction.emoji.name);
 
-                    if (update) {
-                      return true;
-                    } else {
-                      await reaction.users.remove(user.id);
-                      this._busy = false;
-                      return false;
-                    }
+                  if (update) {
+                    return true;
+                  } else {
+                    await reaction.users.remove(user.id);
+                    this._busy = false;
+                    return false;
                   }
+                }
               }
 
               this._busy = false;
@@ -314,16 +309,13 @@ class Trial {
 
             collectorRole.on('collect', async (reaction, user) => {
               reactionRole.users.remove(user.id);
-              switch (reaction.emoji.name) {
-                case '🗑️':
-                  await messageRole.delete();
-                  break;
-                default:
-                  await messageRole.reactions.cache.get(reaction.emoji.name).remove().catch(error => console.error('Failed to remove reactions: ', error));
-                  await messageRole.react(reactionRole.emoji.name);
-                  reactionRole = reaction;
-                  await messageRole.edit(`${messageRole.guild.members.cache.find(users => users.id == user.id)} signed up for **${this._name}** as ${reactionRole.emoji.name}`);
-                  break;
+              if (reaction.emoji.name == '🗑️') {
+                await messageRole.delete();
+              } else {
+                await messageRole.reactions.cache.get(reaction.emoji.name).remove().catch(error => console.error('Failed to remove reactions: ', error));
+                await messageRole.react(reactionRole.emoji.name);
+                reactionRole = reaction;
+                await messageRole.edit(`${messageRole.guild.members.cache.find(users => users.id == user.id)} signed up for **${this._name}** as ${reactionRole.emoji.name}`);
               }
               this._busy = false;
             });

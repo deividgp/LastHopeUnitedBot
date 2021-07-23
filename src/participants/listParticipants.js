@@ -38,10 +38,10 @@ class ListParticipants {
     for (let index = 0; index < this._counter; index++) {
       const element = this._participants[index];
 
-      if (id != '' && role === '' && element.id === id) {
-        return index;
-      } else if (id != '' && role != '' && element.id === id && element.role === role) {
-        return index;
+      if(id != '' && element.id === id){
+        if (role === '' || (role != '' && element.role === role)) {
+          return index;
+        }
       }
     }
 

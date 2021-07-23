@@ -115,8 +115,8 @@ client.on('message', async msg => {
       .catch(console.error);*/
       const members = msg.guild.members.cache.filter(member => !member.user.bot).array();
       msg.channel.send(members.length);
-      for (let index = 0; index < members.length; index++) {
-        console.log(members[index]['user']['id']);
+      for (const member of members) {
+        console.log(member['user']['id']);
       }
       break;
     case 'simpsonsquote':
@@ -200,11 +200,11 @@ client.on('message', async msg => {
       channelID = msg.channel.id;
       edgyActive = true;
       break;
-    case 'changepre':
+    /*case 'changepre':
       if (!msg.member.hasPermission("ADMINISTRATOR"))
         return msg.channel.send(`Not enough permissions`);
       prefix = args[0];
-      break;
+      break;*/
     /*case 'slowmode':
       msg.delete();
       if (!msg.member.hasPermission("ADMINISTRATOR"))
@@ -311,14 +311,6 @@ client.on('message', async msg => {
 
       break;
     //Confirm trial participants
-    case 'confirmtrial':
-      msg.delete();
-      if (!msg.member.hasPermission("ADMINISTRATOR"))
-        return msg.channel.send(`Not enough permissions`);
-
-      confirmTrial(msg.channel);
-
-      break;
     case 'confirmtrial':
       msg.delete();
       if (!msg.member.hasPermission("ADMINISTRATOR"))

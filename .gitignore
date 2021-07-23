@@ -4,3 +4,5 @@ LastHopeUnited-d4330ad6acdb.json
 *.jar
 .env
 *.zip
+sonar-project.properties
+/.scannerwork
