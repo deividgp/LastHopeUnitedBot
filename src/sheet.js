@@ -4,7 +4,6 @@ const readline = require('readline');
 const { google } = require('googleapis');
 const { auth } = require('googleapis/build/src/apis/abusiveexperiencereport');
 require('dotenv').config()
-const { sheetId } = require(`../config/${process.env.MODE}.json`);
 
 const SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly'];
 const TOKEN_PATH = './config/token.json';
@@ -65,7 +64,7 @@ class Sheet {
     listMajors(auth, name, msg) {
         const sheets = google.sheets({ version: 'v4', auth });
         sheets.spreadsheets.values.get({
-            spreadsheetId: sheetId,
+            spreadsheetId: process.env.SHEET_ID,
             range: `${name}!A2:H`,
         }, (err, res) => {
             if (err) return console.log('The API returned an error: ' + err);
@@ -73,7 +72,7 @@ class Sheet {
             if (rows.length) {
                 // Print columns A and E, which correspond to indices 0 and 4.
                 var msgBlock = "```\n";
-                rows.map((row) => {
+                rows.array.forEach(row => {
                     msgBlock = msgBlock + `${row[0]},${row[1]},${row[2]},${row[3]},${row[4]},${row[5]},${row[6]},${row[7]}\n`;
                 });
                 msgBlock = msgBlock + "```";

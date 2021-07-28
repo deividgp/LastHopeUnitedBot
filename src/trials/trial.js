@@ -101,7 +101,7 @@ class Trial {
     return false;
   }
 
-  revertDeleteParticipantFinal(role, index, add) {
+  revertDeleteParticipantFinal(role, index, add = false) {
 
     if (index != undefined && role == undefined) {
       role = this._participants.participants[index].role;
@@ -153,14 +153,14 @@ class Trial {
 
   deleteParticipantFinal(id) {
     let index = this._participants.findParticipant(id, '');
-    this.revertDeleteParticipantFinal(undefined, index, false);
+    this.revertDeleteParticipantFinal(undefined, index);
     this.editEmbed();
   }
 
   updateParticipantFinal(id, role) {
     let index = this._participants.findParticipant(id, '');
     let oldRole = this._participants.participants[index].role;
-    this.revertDeleteParticipantFinal(undefined, index, false);
+    this.revertDeleteParticipantFinal(undefined, index);
 
     let verify = this.addRole(id, role);
 
@@ -170,7 +170,7 @@ class Trial {
       this.editEmbed();
       return true;
     } else {
-      this.revertDeleteParticipantFinal(role, undefined, false);
+      this.revertDeleteParticipantFinal(role, undefined);
       this._participants.addParticipant(id, oldRole);
       return false;
     }
@@ -180,7 +180,7 @@ class Trial {
     var msgBlock = `**${this._name} at ${this._date}**\n`;
     for (let index = 0; index < this._participants._counter; index++) {
       const element = this._participants.participants[index];
-      msgBlock = msgBlock + `${message.guild.members.cache.find(users => users.id == element.id)} is ${element.role}\n`;
+      msgBlock = msgBlock + `${message.guild.members.cache.find(m => m.id == element.id)} is ${element.role}\n`;
     }
     await message.channel.send(msgBlock);
   }
@@ -264,7 +264,7 @@ class Trial {
       collector.on('collect', (reaction, user) => {
         if (reaction.emoji.name != '🛑') {
           console.log(`Collected ${reaction.emoji.name} from ${user.tag}`);
-          messageReaction.channel.send(`${messageReaction.guild.members.cache.find(users => users.id == user.id)} signed up for **${this._name}** as ${reaction.emoji.name}`).then(async (messageRole) => {
+          messageReaction.channel.send(`${messageReaction.guild.members.cache.find(m => m.id == user.id)} signed up for **${this._name}** as ${reaction.emoji.name}`).then(async (messageRole) => {
             var userRole = user;
             var reactionRole = reaction;
             await messageRole.react('🗑️');
@@ -315,7 +315,7 @@ class Trial {
                 await messageRole.reactions.cache.get(reaction.emoji.name).remove().catch(error => console.error('Failed to remove reactions: ', error));
                 await messageRole.react(reactionRole.emoji.name);
                 reactionRole = reaction;
-                await messageRole.edit(`${messageRole.guild.members.cache.find(users => users.id == user.id)} signed up for **${this._name}** as ${reactionRole.emoji.name}`);
+                await messageRole.edit(`${messageRole.guild.members.cache.find(m => m.id == user.id)} signed up for **${this._name}** as ${reactionRole.emoji.name}`);
               }
               this._busy = false;
             });

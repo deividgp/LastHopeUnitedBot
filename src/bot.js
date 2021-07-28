@@ -1,7 +1,8 @@
 const Discord = require('discord.js');
+const client = new Discord.Client();
 const cron = require('cron');
 const fetch = require('node-fetch');
-var Twit = require('twit');
+const Twit = require('twit');
 const moment = require('moment');
 require('dotenv').config()
 const { Translate } = require('@google-cloud/translate').v2;
@@ -9,28 +10,27 @@ const http = require('https');
 const {
   prefix,
   token,
-  consumer_key,
-  consumer_secret,
-  access_token,
-  access_token_secret,
 } = require(`../config/${process.env.MODE}.json`);
+const {
+  assignRole,
+  deleteMessages,
+  confirmTrial,
+} = require('./functions.js');
 const ListTrials = require('./trials/listTrials.js');
 const Sheet = require('./sheet.js');
-var sheet = new Sheet();
+const sheet = new Sheet();
 const translate = new Translate();
-const client = new Discord.Client();
-var T = new Twit({
-  consumer_key,
-  consumer_secret,
-  access_token,
-  access_token_secret,
+
+const T = new Twit({
+  consumer_key: `${process.env.TWITTER_CONSUMER_KEY}`,
+  consumer_secret: `${process.env.TWITTER_CONSUMER_SECRET}`,
+  access_token: `${process.env.TWITTER_ACCESS_TOKEN}`,
+  access_token_secret: `${process.env.TWITTER_ACCESS_TOKEN_SECRET}`,
 });
-//const generalChannels = ['639444161954840618', '639746140186869801', '706792008345190440', '778277022442586183', '674268979157794875', '718911455096995900', '639746208428195850', '798153323991662592'];
-var guildID;
-var channelID;
-var trials = new ListTrials();
-var edgyActive = false;
-var trialsActive = false;
+
+const trials = new ListTrials();
+let guildID;
+let channelID;
 
 client.on('ready', () => {
   console.log(`Logged in as ${client.user.tag}!`);
@@ -47,31 +47,39 @@ client.on('ready', () => {
       }, 4000);
     })
     .catch(console.error);
+  /*client.channels.fetch('863732362495262741')
+    .then(channel => {
+      deleteMessages(channel, 6);
+      setTimeout(async function () {
+        await assignRole(channel, "712978610562269235");
+      }, 4000);
+    })
+    .catch(console.error);*/
 });
 
 client.on('guildMemberAdd', member => {
   if (!member.bot) {
-    var role = member.guild.roles.cache.find(role => role.name === "Pleb");
+    let role = member.guild.roles.cache.find(r => r.name === "Pleb");
     member.roles.add(role);
   }
 });
 
 client.on('guildMemberRemove', member => {
-  client.channels.fetch('639444161954840618')
+  client.channels.fetch('811207960701042715')
     .then(channel => {
-      channel.send(`Suck SpoonMan ${member.user.tag}`);
+      channel.send(`Goodbye ${member.user.tag}`);
     })
     .catch(console.error);
 });
 
 client.on('message', async msg => {
 
-  if (msg.author.bot) return;
-
-  if (msg.content === "?XD") msg.channel.send("?XD");
-
-  if (!msg.content.startsWith(prefix)) return;
-  //if (!msg.content.startsWith(prefix) || msg.author.bot) return;
+  if (!msg.content.startsWith(prefix) || msg.author.bot) {
+    if (msg.content === "?XD" && !msg.author.bot) {
+      return msg.channel.send("?XD");
+    }
+    return;
+  }
 
   const args = msg.content.slice(prefix.length).split(' ');
   const command = args.shift().toLowerCase();
@@ -81,7 +89,7 @@ client.on('message', async msg => {
       msg.channel.send('https://tenor.com/view/you-wouldnt-get-it-joker-smoking-gif-15952801');
       break;
     case 'justice':
-      const sadge = msg.guild.emojis.cache.find(emoji => emoji.name === 'sadge');
+      const sadge = msg.guild.emojis.cache.find(e => e.name === 'sadge');
       msg.channel.send(`${sadge} without justice there is no prevail ${sadge} and without prevail there is no life ${sadge} but afterall life is suffering and pain ${sadge} so why even have justice afterall? ${sadge}`);
       break;
     case 'cheese':
@@ -94,9 +102,6 @@ client.on('message', async msg => {
     case 'nex':
       msg.channel.send('https://cdn.discordapp.com/emojis/684133015043178526.png');
       break;
-    case 'thot':
-      msg.channel.send('https://media1.tenor.com/images/c0086dbd46e551b5aa1ea42de6960b3b/tenor.gif?itemid=10386441');
-      break;
     case 'putin':
       msg.channel.send('https://media1.tenor.com/images/c59a419de2c2b94aa95215d575ea9a14/tenor.gif?itemid=17444588');
       break;
@@ -107,7 +112,7 @@ client.on('message', async msg => {
       msg.channel.send('https://cdn.discordapp.com/emojis/701053681616945183.gif');
       break;
     case 'winkall':
-      msg.channel.send(`:wink: ${msg.guild.members.cache.find(users => users.id == '308653237211234317')}\n:wink: ${msg.guild.members.cache.find(users => users.id == '655358675170361344')}\n:wink: ${msg.guild.members.cache.find(users => users.id == '166585626425163776')}\n:wink: ${msg.guild.members.cache.find(users => users.id == '303950858490740746')}\n:wink: ${msg.guild.members.cache.find(users => users.id == '397899899255128064')}\n:wink: ${msg.guild.members.cache.find(users => users.id == '312629007864823808')}\n:wink: ${msg.guild.members.cache.find(users => users.id == '502430932255375360')}`);
+      msg.channel.send(`:wink: ${msg.guild.members.cache.find(u => u.id == '308653237211234317')}\n:wink: ${msg.guild.members.cache.find(users => users.id == '655358675170361344')}\n:wink: ${msg.guild.members.cache.find(users => users.id == '166585626425163776')}\n:wink: ${msg.guild.members.cache.find(users => users.id == '303950858490740746')}\n:wink: ${msg.guild.members.cache.find(users => users.id == '397899899255128064')}\n:wink: ${msg.guild.members.cache.find(users => users.id == '312629007864823808')}\n:wink: ${msg.guild.members.cache.find(users => users.id == '502430932255375360')}`);
       break;
     case 'getall':
       /*msg.channel.send(msg.guild.members.fetch().filter(member => !member.user.bot).size);
@@ -136,7 +141,7 @@ client.on('message', async msg => {
         })
       break;
     case 'translate':
-      var text = [];
+      let text = [];
 
       for (let index = 0; index < args.length; index++) {
         await msg.channel.messages.fetch(args[index])
@@ -198,22 +203,12 @@ client.on('message', async msg => {
         return msg.channel.send(`Not enough permissions`);
       guildID = msg.guild.id;
       channelID = msg.channel.id;
-      edgyActive = true;
+      edgyTurn.start();
       break;
     /*case 'changepre':
       if (!msg.member.hasPermission("ADMINISTRATOR"))
         return msg.channel.send(`Not enough permissions`);
       prefix = args[0];
-      break;*/
-    /*case 'slowmode':
-      msg.delete();
-      if (!msg.member.hasPermission("ADMINISTRATOR"))
-        return msg.channel.send(`Not enough permissions`);
-
-      for (let index = 0; index < generalChannels.length; index++) {
-        let auxChannel = msg.guild.channels.cache.find(channel => channel.id === generalChannels[index]);
-        auxChannel.setRateLimitPerUser(parseInt(args[0]), "");
-      }
       break;*/
     case 'sheet':
       if (!msg.member.hasPermission("ADMINISTRATOR"))
@@ -228,7 +223,7 @@ client.on('message', async msg => {
 
       guildID = msg.guild.id;
       channelID = msg.channel.id;
-      trialsActive = true;
+      scheduledTrial.start();
       break;
 
     case 'starttrial':
@@ -236,7 +231,7 @@ client.on('message', async msg => {
       if (!msg.member.hasPermission("ADMINISTRATOR"))
         return msg.channel.send(`Not enough permissions`);
 
-      var parseDate = moment(`${args[2]} ${args[3]}`, "DD/MM/YYYY HH:mm").toDate();
+      let parseDate = moment(`${args[2]} ${args[3]}`, "DD/MM/YYYY HH:mm").toDate();
 
       if (parseInt(args[1]) >= 1 && args[2].length == 10 && args[3].length == 5 && new Date() < parseDate)
         trials.addTrial(args, msg.channel);
@@ -316,29 +311,29 @@ client.on('message', async msg => {
       if (!msg.member.hasPermission("ADMINISTRATOR"))
         return msg.channel.send(`Not enough permissions`);
 
-      confirmTrial(msg.channel);
+      confirmTrial(msg.channel, client);
 
       break;
     case 'server':
     case 'servers':
-      http.get("https://live-services.elderscrollsonline.com/status/realms", function(res) {
+      http.get("https://live-services.elderscrollsonline.com/status/realms", function (res) {
         let data = '',
           json_data;
 
-        res.on('data', function(stream) {
+        res.on('data', function (stream) {
           data += stream;
         });
-        res.on('end', function() {
+        res.on('end', function () {
           json_data = JSON.parse(data);
-          var serverInfo = json_data["zos_platform_response"]["response"];
+          let serverInfo = json_data["zos_platform_response"]["response"];
 
           let serverEmbed = new Discord.MessageEmbed()
             .setTitle(`Server status`)
 
-            for(var server in serverInfo){
-              serverEmbed.addField(`${server.substring(26, server.length-1)}`, `${serverInfo[server]}`, true)
-            }
-          
+          for (let server in serverInfo) {
+            serverEmbed.addField(`${server.substring(26, server.length - 1)}`, `${serverInfo[server]}`, true)
+          }
+
           msg.channel.send(serverEmbed);
         });
       });
@@ -347,203 +342,40 @@ client.on('message', async msg => {
 
 });
 
-async function assignRole(channel, roleID) {
-  var role = channel.guild.roles.cache.find(role => role.id === roleID);
-
-  let roleEmbed = new Discord.MessageEmbed()
-    .addField(`${role.name}?`, `✔️ if yes or ❌ if not. React to have access to most channels if you are new.`, false)
-
-  channel.send(roleEmbed).then(async (messageReaction) => {
-
-    await messageReaction.react('✔️');
-    await messageReaction.react('❌');
-
-    const filter = (reaction, user) => {
-
-      if (messageReaction.author.id != user.id) {
-
-        switch (reaction.emoji.name) {
-          case '✔️':
-            return true;
-          case '❌':
-            return true;
-          default:
-            reaction.users.remove(user.id);
-            break;
-        }
-
-        return false;
-      }
-    };
-
-    const collector = messageReaction.createReactionCollector(filter, {});
-
-    collector.on('collect', (reaction, user) => {
-      var member = channel.guild.members.cache.find(users => users.id == user.id);
-      var plebRole = channel.guild.roles.cache.find(role => role.name === "Pleb");
-      switch (reaction.emoji.name) {
-        case '✔️':
-          member.roles.remove(plebRole);
-          member.roles.add(role);
-          break;
-        case '❌':
-          member.roles.remove(plebRole);
-          break;
-      }
-    });
-  });
-}
-
-let scheduledTrial = new cron.CronJob('00 00 17 * * 4', () => {
-
-  if (guildID != undefined && trialsActive) {
-
-    let guild = client.guilds.cache.get(guildID);
-    let channel = guild.channels.cache.get(channelID);
-
-    trials.recursiveTrial(channel);
-
-  }
-});
-
-scheduledTrial.start();
-
-let edgyTurn = new cron.CronJob('00 00 22 * * *', () => {
-  if (guildID != undefined && edgyActive) {
-    let guild = client.guilds.cache.get(guildID);
-    let channel = guild.channels.cache.get(channelID);
-    let randomID = selectRandomMember();
-
-    channel.send(`Today is ${guild.members.cache.find(users => users.id == randomID)} 's turn`);
-  }
-});
-
-edgyTurn.start();
-
-function selectRandomMember() {
-  const members = (client.guilds.cache.get(guildID)).members.cache.filter(member => !member.user.bot).array();
-  return (members[Math.floor(Math.random() * members.length)]['user']['id']);
-}
-
-var stream = T.stream('statuses/filter', { follow: '308503953' });
+const stream = T.stream('statuses/filter', { follow: '718475378751381504' });
 
 stream.on('tweet', function (tweet) {
-  console.log(`${tweet.text}`);
-  var content = tweet.text;
-  if (content.includes("#ESO") && content.includes("TESOnline")) {
-    console.log("suh dude");
-    switch (true) {
-      case content.includes("PC/Mac"):
-        switch (true) {
-          case content.includes(" available"):
-
-            break;
-          case content.includes(" unavailable"):
-
-            break;
-        }
-        break;
-      case content.includes("XboxOne"):
-
-        break;
-      case content.includes("PS4"):
-
-        break;
-      case content.includes("console"):
-
-        break;
-    }
+  let content = tweet.text;
+  if (content.includes("ESO") && content.includes("European PC")) {
+    /*client.channels.fetch('863732362495262741')
+      .then(channel => {
+        channel.send(tweet.text);
+      })*/
+    client.channels.fetch('811948277461024838')
+      .then(channel => {
+        channel.send(tweet.text);
+      })
   }
 });
 
-function confirmTrial(channel) {
+const scheduledTrial = new cron.CronJob('00 00 17 * * 4', () => {
+  let guild = client.guilds.cache.get(guildID);
+  let channel = guild.channels.cache.get(channelID);
 
-  channel.awaitMessages(message => (message.member.hasPermission("ADMINISTRATOR")), { max: 1, time: 30000 }).then(async collected => {
+  trials.recursiveTrial(channel);
+});
 
-    if (collected.first().content != "cancel") {
-      message = collected.first();
-      var messageContent = message.content;
-      var indexIds = 0;
-      var idsConfirmation = [];
+const edgyTurn = new cron.CronJob('00 00 22 * * *', () => {
+  let guild = client.guilds.cache.get(guildID);
+  let channel = guild.channels.cache.get(channelID);
+  let randomID = selectRandomMember();
 
-      for (let index = 0; index < messageContent.length; index++) {
-        if (messageContent.charAt(index) == '<') {
-          idsConfirmation[indexIds] = messageContent.substring(index + 3, (index + 3) + 18);
-          indexIds++;
-          index = (index + 3) + 19;
-        }
-      }
+  channel.send(`Today is ${guild.members.cache.find(u => u.id == randomID)} 's turn`);
+});
 
-      var counter = 0;
-      await message.react('✔️');
-
-      const filter = (reaction, user) => {
-
-        if (message.member.id == user.id && reaction.emoji.name == '🛑') {
-          return true;
-        }
-
-        if (idsConfirmation.includes(user.id) && user.id != client.user.id && reaction.emoji.name === '✔️' && counter <= idsConfirmation.length) {
-          counter++;
-          return true;
-        }
-
-        return false;
-      };
-
-      const collector = message.createReactionCollector(filter, {});
-
-      collector.on('collect', (reaction, user) => {
-        if (reaction.emoji.name != '🛑') {
-          var member = channel.guild.members.cache.find(users => users.id == user.id);
-          channel.send(`${member} confirmed attendance.`);
-
-          for (let index = 0; index < idsConfirmation.length; index++) {
-            if (user.id == idsConfirmation[index]) {
-              idsConfirmation[index] = undefined;
-              break;
-            }
-          }
-        } else {
-          collector.stop('Collector stopped');
-        }
-      });
-
-    } else {
-      channel.send("Operation cancelled");
-    }
-
-  }).catch(() => {
-    channel.send('No answer after 30 seconds, operation canceled.');
-  });
-}
-
-function deleteMessages(channel, max) {
-  channel.messages.fetch({
-    limit: max
-  }).then((messages) => {
-    var msgArray = [];
-    messages.forEach(msg => msgArray.push(msg));
-    channel.bulkDelete(msgArray);
-  })
-}
-
-/*function availableUnavailable(tweet, platform){
-  switch (true) {
-    case tweet.includes(" available"):
-      serverStatus = new Discord.MessageEmbed()
-      .setTitle(`ESO SERVER STATUS`)
-      
-      .addFields(
-        { name: 'Tanks', value: `0/${this._tMax}`, inline: true },
-        { name: 'Healers', value: `0/2`, inline: true },
-        { name: 'Damage Dealers', value: `0/${this._ddMax}`, inline: true },
-      )
-      break;
-    case tweet.includes(" unavailable"):
-
-      break;
-  }
+/*function selectRandomMember() {
+  const members = (client.guilds.cache.get(guildID)).members.cache.filter(member => !member.user.bot).array();
+  return (members[Math.floor(Math.random() * members.length)]['user']['id']);
 }*/
 
 client.login(token);
