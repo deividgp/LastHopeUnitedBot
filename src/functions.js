@@ -54,8 +54,7 @@ const deleteMessages = async (channel, max) => {
     }).then((messages) => {
         let msgArray = [];
         messages.forEach((msg) => {
-            if (msg.author.bot)
-                msgArray.push(msg);
+            msgArray.push(msg);
         })
         channel.bulkDelete(msgArray);
     })

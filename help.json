@@ -1,0 +1,42 @@
+[
+    {
+        "name": "!simpsonsQuote",
+        "value": "Returns a random Simpsons quote"
+    },
+    {
+        "name": "!translate [messageId1] [messageId2]...",
+        "value": "Translate a message or multiple messages"
+    },
+    {
+        "name": "Admin commands",
+        "value": "↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓"
+    },
+    {
+        "name": "!startTrial [name] [nº of tanks] [day (MM/DD/YYYY)] [CEST time (HH:MM)]",
+        "value": "Initialize a trial. Example: !startTrial nHoF 2 08/20/2020 18:00"
+    },
+    {
+        "name": "!list [trialID]",
+        "value": "List all trial members given trial's id. Example: !list 1"
+    },
+    {
+        "name": "!add [trialID] [userID] [role]",
+        "value": "Add a trial member. Example: !add 1 308653237211234317 🛡️"
+    },
+    {
+        "name": "!update [trialID] [userID] [newRole]",
+        "value": "Update a member's role. Example: !update 1 308653237211234317 🚑"
+    },
+    {
+        "name": "!delete [trialID] [userID]",
+        "value": "Delete a member from the specified trial. Example: !delete 308653237211234317"
+    },
+    {
+        "name": "!assignRole [roleID]",
+        "value": "Create an autoassign embed message"
+    },
+    {
+        "name": "!deleteMessages [messagedNº]",
+        "value": "Remove X number of messages"
+    }
+]

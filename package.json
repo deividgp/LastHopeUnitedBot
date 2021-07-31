@@ -1,6 +1,6 @@
 {
   "name": "lhubot",
-  "version": "1.6.0",
+  "version": "1.7.0",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -16,6 +16,7 @@
     "discord.js": "^12.5.1",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
+    "fs": "^0.0.1-security",
     "googleapis": "^66.0.0",
     "moment": "^2.29.1",
     "node-fetch": "^2.6.1",
