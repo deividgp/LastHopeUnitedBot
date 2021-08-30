@@ -3,8 +3,8 @@ const Discord = require('discord.js');
 
 module.exports = {
     name: 'servers',
-    description: '',
-    async execute(trials, client, msg, args) {
+    description: 'Servers',
+    async execute(trials, client, interaction) {
         http.get("https://live-services.elderscrollsonline.com/status/realms", function (res) {
             let data = '',
                 json_data;
@@ -12,7 +12,7 @@ module.exports = {
             res.on('data', function (stream) {
                 data += stream;
             });
-            res.on('end', function () {
+            res.on('end', async function () {
                 json_data = JSON.parse(data);
                 let serverInfo = json_data["zos_platform_response"]["response"];
 
@@ -23,7 +23,7 @@ module.exports = {
                     serverEmbed.addField(`${server.substring(26, server.length - 1)}`, `${serverInfo[server]}`, true)
                 }
 
-                msg.channel.send(serverEmbed);
+                await interaction.reply({ embeds: [serverEmbed] });
             });
         });
     }

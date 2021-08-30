@@ -1,20 +1,32 @@
+const { ApplicationCommandOptionType } = require("discord-api-types/v9");
+
 module.exports = {
     name: 'delete',
-    description: 'Delete a participant (!delete trialid userid)',
-    async execute(trials, client, msg, args) {
-        await msg.delete();
-        if (!msg.member.hasPermission("ADMINISTRATOR"))
-            return msg.channel.send(`Not enough permissions`);
-
-        if (parseInt(args[0]) == 0 || (parseInt(args[0]) - 1) > trials._counter)
-            return msg.channel.send(`The first argument is invalid`);
-
-        if (args[1] == undefined) {
-
-            msg.channel.send(`You didn't provide enough arguments, ${msg.author}!`);
-
-        } else {
-            trials._trials[parseInt(args[0]) - 1].deleteParticipantFinal(args[1]);
+    description: 'Delete a participant (delete trialid userid)',
+    options: [
+        {
+            name: 'trialid',
+            type: ApplicationCommandOptionType.Integer,
+            description: 'Trial ID',
+            required: true,
+        },
+        {
+            name: 'user',
+            type: ApplicationCommandOptionType.User,
+            description: 'User',
+            required: true,
         }
+    ],
+    async execute(trials, client, interaction) {
+        if (!interaction.member.permissions.has("ADMINISTRATOR"))
+            return await interaction.reply({ content: 'Not enough permissions', ephemeral: true });
+
+        const trialid = interaction.options.getInteger("trialid");
+        const userid = interaction.options.getUser("userid").id;
+
+        if (trialid == 0 || (trialid - 1) > trials._counter)
+            return await interaction.reply({ content: 'The first argument is invalid', ephemeral: true });
+
+        trials._trials[trialid - 1].deleteParticipantFinal(userid);
     }
 }

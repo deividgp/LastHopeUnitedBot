@@ -1,7 +1,7 @@
 module.exports = {
     name: 'currentutc',
-    description: '',
-    async execute(trials, client, msg, args) {
-        await msg.channel.send(`${new Date().getUTCHours()}:${new Date().getUTCMinutes()}`);
+    description: 'Current UTC',
+    async execute(trials, client, interaction) {
+        await interaction.reply(`${new Date().getUTCHours()}:${new Date().getUTCMinutes()}`);
     }
 }

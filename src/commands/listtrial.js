@@ -1,14 +1,24 @@
+const { ApplicationCommandOptionType } = require('discord-api-types/v9');
+
 module.exports = {
     name: 'listtrial',
-    description: 'Lists all participants (!list trialid)',
-    async execute(trials, client, msg, args) {
-        await msg.delete();
-        if (!msg.member.hasPermission("ADMINISTRATOR"))
-            return msg.channel.send(`Not enough permissions`);
+    description: 'Lists all participants',
+    options: [{
+        name: 'trialid',
+        type: ApplicationCommandOptionType.Integer,
+        description: 'Trial ID',
+        required: true,
+    }],
+    async execute(trials, client, interaction) {
+        if (!interaction.member.permissions.has("ADMINISTRATOR"))
+            return await interaction.reply(`Not enough permissions`);
 
-        if (parseInt(args[0]) == 0 || (parseInt(args[0]) - 1) > trials._counter)
-            return msg.channel.send(`The first argument isn't valid`);
+        const trialID = interaction.options.getInteger('trialid');
 
-        trials._trials[parseInt(args[0]) - 1].listParticipants(msg);
+        if (trialID == 0 || (trialID - 1) > trials._counter)
+            return await interaction.reply(`The first argument isn't valid`);
+
+        await interaction.reply(`**${trials._trials[trialID - 1]._name} at ${trials._trials[trialID - 1]._date}**`);
+        trials._trials[trialID - 1].listParticipants(interaction.channel);
     }
 }

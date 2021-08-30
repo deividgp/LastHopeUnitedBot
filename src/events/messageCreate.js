@@ -3,7 +3,7 @@ const {
 } = require.main.require(`../config/${process.env.MODE}.json`);
 
 module.exports = {
-    name: 'message',
+    name: 'messageCreate',
     once: false,
     async execute(msg, client, trials) {
         if (!msg.content.startsWith(prefix) || msg.author.bot) {
@@ -13,10 +13,10 @@ module.exports = {
             return;
         }
 
-        const args = msg.content.slice(prefix.length).split(' ');
+        /*const args = msg.content.slice(prefix.length).split(' ');
         const command = args.shift().toLowerCase();
 
-        if (client.commands.has(command))
-            client.commands.get(command).execute(trials, client, msg, args);
+        if (client.commands.has(command) && command == "confirmtrial")
+            client.commands.get(command).execute(trials, client, msg, args);*/
     }
 }

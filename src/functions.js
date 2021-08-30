@@ -6,7 +6,7 @@ const assignRole = async (channel, roleID) => {
     let roleEmbed = new Discord.MessageEmbed()
         .addField(`${role.name}?`, `✔️ if yes or ❌ if not. React to have access to most channels if you are new.`, false)
 
-    channel.send(roleEmbed).then(async (messageReaction) => {
+    channel.send({ embeds: [roleEmbed] }).then(async (messageReaction) => {
 
         await messageReaction.react('✔️');
         await messageReaction.react('❌');
@@ -29,7 +29,7 @@ const assignRole = async (channel, roleID) => {
             }
         };
 
-        const collector = messageReaction.createReactionCollector(filter, {});
+        const collector = messageReaction.createReactionCollector({ filter });
 
         collector.on('collect', (reaction, user) => {
             let member = channel.guild.members.cache.find(u => u.id == user.id);
@@ -47,25 +47,12 @@ const assignRole = async (channel, roleID) => {
     });
 }
 
-
-const deleteMessages = async (channel, max) => {
-    channel.messages.fetch({
-        limit: max
-    }).then((messages) => {
-        let msgArray = [];
-        messages.forEach((msg) => {
-            msgArray.push(msg);
-        })
-        channel.bulkDelete(msgArray);
-    })
-}
-
-const confirmTrial = async (channel, client) => {
-
-    channel.awaitMessages(message => (message.member.hasPermission("ADMINISTRATOR")), { max: 1, time: 30000 }).then(async collected => {
+const confirmTrial = async (interaction, client) => {
+    interaction.channel.awaitMessages({ max: 1, time: 15000 }).then(async collected => {
 
         if (collected.first().content != "cancel") {
-            message = collected.first();
+            collected.first().delete();
+            const message = await interaction.channel.send(collected.first().content);
             let messageContent = message.content;
             let indexIds = 0;
             let idsConfirmation = [];
@@ -78,47 +65,44 @@ const confirmTrial = async (channel, client) => {
                 }
             }
 
-            let counter = 0;
             await message.react('✔️');
-
+            await message.react('❌');
             const filter = (reaction, user) => {
 
-                if (message.member.id == user.id && reaction.emoji.name == '🛑') {
-                    return true;
-                }
-
-                if (idsConfirmation.includes(user.id) && user.id != client.user.id && reaction.emoji.name === '✔️' && counter <= idsConfirmation.length) {
-                    counter++;
+                if ((message.member.id == user.id && reaction.emoji.name == '🛑') || (idsConfirmation.includes(user.id) && user.id != client.user.id && (reaction.emoji.name === '✔️' || reaction.emoji.name === '❌'))) {
                     return true;
                 }
 
                 return false;
             };
 
-            const collector = message.createReactionCollector(filter, {});
+            const collector = message.createReactionCollector({ filter });
 
             collector.on('collect', (reaction, user) => {
                 if (reaction.emoji.name != '🛑') {
-                    let member = channel.guild.members.cache.find(users => users.id == user.id);
-                    channel.send(`${member} confirmed attendance.`);
+                    /*let member = interaction.channel.guild.members.cache.find(users => users.id == user.id);
+                    interaction.channel.send(`${member} confirmed attendance.`);*/
+                    const index = messageContent.search(user.id);
+                    messageContent = messageContent.replaceAt(index + 19, reaction.emoji.name);
+                    message.edit(messageContent);
 
-                    for (let index = 0; index < idsConfirmation.length; index++) {
+                    /*for (let index = 0; index < idsConfirmation.length; index++) {
                         if (user.id == idsConfirmation[index]) {
                             idsConfirmation[index] = undefined;
                             break;
                         }
-                    }
+                    }*/
                 } else {
                     collector.stop('Collector stopped');
                 }
             });
 
         } else {
-            channel.send("Operation cancelled");
+            interaction.channel.send("Operation cancelled");
         }
 
     }).catch(() => {
-        channel.send('No answer after 30 seconds, operation canceled.');
+        interaction.channel.send('Operation canceled.');
     });
 }
 
@@ -134,9 +118,14 @@ const isReply = (tweet) => {
     return false;
 }
 
+String.prototype.replaceAt = function (index, char) {
+    var a = this.split("");
+    a[index] = char;
+    return a.join("");
+}
+
 module.exports = {
     assignRole,
-    deleteMessages,
     confirmTrial,
     isReply
 }

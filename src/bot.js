@@ -1,5 +1,5 @@
-const Discord = require('discord.js');
-const client = new Discord.Client();
+const { Client, Intents, Collection } = require('discord.js');
+const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_MESSAGE_REACTIONS, Intents.FLAGS.DIRECT_MESSAGES, Intents.FLAGS.GUILD_MEMBERS] });
 const Twit = require('twit');
 const http = require('https');
 require('dotenv').config()
@@ -11,15 +11,15 @@ const {
 } = require('./functions.js');
 const ListTrials = require('./trials/listTrials.js');
 const trials = new ListTrials();
-const T = new Twit({
+/*const T = new Twit({
   consumer_key: `${process.env.TWITTER_CONSUMER_KEY}`,
   consumer_secret: `${process.env.TWITTER_CONSUMER_SECRET}`,
   access_token: `${process.env.TWITTER_ACCESS_TOKEN}`,
   access_token_secret: `${process.env.TWITTER_ACCESS_TOKEN_SECRET}`,
-});
-
-client.commands = new Discord.Collection();
-client.events = new Discord.Collection();
+});*/
+const tweetKeywords = ["ESO", "European megaservers", "European PC"];
+client.commands = new Collection();
+client.events = new Collection();
 
 ['command_handler', 'event_handler'].forEach(handler => {
   if (handler == "event_handler") {
@@ -29,17 +29,17 @@ client.events = new Discord.Collection();
   }
 })
 
-const stream = T.stream('statuses/filter', { follow: '718475378751381504' });
+/*const stream = T.stream('statuses/filter', { follow: '718475378751381504' });
 
 stream.on('tweet', function (tweet) {
   let content = tweet.text;
-  if (content.includes("ESO") && content.includes("European PC") && !isReply(tweet)) {
+  if (tweetKeywords.some(keyword => content.includes(keyword)) && !isReply(tweet)) {
     client.channels.fetch('811948277461024838')
       .then(channel => {
         channel.send(tweet.text);
       })
   }
-});
+});*/
 
 /*setInterval(function () {
   http.get("https://live-services.elderscrollsonline.com/status/realms", function (res) {

@@ -19,9 +19,31 @@ class ListParticipants {
     this._counter = counter;
   }
 
-  addParticipant(id, role) {
-    this._participants[this._counter] = new Participant(id, role);
-    this._counter++;
+  addPartialParticipant(id, clas) {
+
+    const index = this.findParticipant(id);
+    if (index == undefined) {
+      this._participants[this._counter] = new Participant(id, clas);
+      this._counter++;
+    }else{
+      if(this.findPartialParticipant(id) == undefined){
+        this._participants[index].newClass = clas;
+      }else{
+        this._participants[index].clas = clas;
+      }
+    }
+  }
+
+  addFullParticipant(id, role) {
+    const index = this.findParticipant(id);
+    this._participants[index].state = "full";
+    this._participants[index].role = role;
+    this._participants[index].newClass = this._participants[index].clas;
+  }
+
+  updateParticipant(index, newRole, newClass){
+    this._participants[index].role = newRole;
+    this._participants[index].clas = newClass;
   }
 
   deleteParticipant(index) {
@@ -34,14 +56,24 @@ class ListParticipants {
     this._participants[this._counter] = undefined;
   }
 
-  findParticipant(id, role) {
+  findParticipant(id, role = '') {
     for (let index = 0; index < this._counter; index++) {
       const element = this._participants[index];
 
-      if(id != '' && element.id === id){
-        if (role === '' || (role != '' && element.role === role)) {
-          return index;
-        }
+      if (element.id === id && (role === '' || (role != '' && element.role === role))) {
+        return index;
+      }
+    }
+
+    return undefined;
+  }
+
+  findPartialParticipant(id) {
+    for (let index = 0; index < this._counter; index++) {
+      const element = this._participants[index];
+
+      if (element.id === id && element.state == "partial") {
+        return index;
       }
     }
 
