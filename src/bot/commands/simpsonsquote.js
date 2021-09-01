@@ -7,7 +7,7 @@ module.exports = {
     async execute(trials, client, interaction) {
         fetch('https://simpsons-quotes-api.herokuapp.com/quotes')
             .then(response => response.json())
-            .then(async(data) => {
+            .then(async (data) => {
                 let quoteEmbed = new Discord.MessageEmbed()
                     .addFields(
                         { name: 'SimpsonsQuote', value: `${data[0]['quote']}`, inline: false },

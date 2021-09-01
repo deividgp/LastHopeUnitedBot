@@ -1,7 +1,7 @@
 const { REST } = require('@discordjs/rest');
 const { Routes } = require('discord-api-types/v9');
 const { token,
-    client_id } = require(`../config/${process.env.MODE}.json`);
+    client_id } = require.main.require(`../../config/${process.env.MODE}.json`);
 
 const deploy = async (client) => {
     const commands = client.commands.map(({ execute, ...data }) => data);
@@ -10,15 +10,14 @@ const deploy = async (client) => {
     try {
         console.log('Started refreshing application (/) commands.');
 
+        // await rest.put(
+        //     Routes.applicationCommands(client_id),
+        //     { body: commands },
+        // );
         await rest.put(
-            Routes.applicationCommands(client_id),
+            Routes.applicationGuildCommands(client_id, '874602860699082774'),
             { body: commands },
         );
-        /*await rest.put(
-			Routes.applicationGuildCommands(client_id, "874602860699082774"),
-			{ body: commands },
-		);*/
-
         console.log('Successfully reloaded application (/) commands.');
     } catch (error) {
         console.error(error);

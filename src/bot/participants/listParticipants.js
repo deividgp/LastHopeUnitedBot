@@ -20,30 +20,30 @@ class ListParticipants {
   }
 
   addPartialParticipant(id, clas) {
-
     const index = this.findParticipant(id);
     if (index == undefined) {
       this._participants[this._counter] = new Participant(id, clas);
       this._counter++;
-    }else{
-      if(this.findPartialParticipant(id) == undefined){
+    } else {
+      if (this.findPartialParticipant(id) == undefined) {
         this._participants[index].newClass = clas;
-      }else{
+      } else {
         this._participants[index].clas = clas;
       }
     }
   }
 
-  addFullParticipant(id, role) {
+  addParticipant(id, role, state = "in") {
     const index = this.findParticipant(id);
-    this._participants[index].state = "full";
+    this._participants[index].state = state;
     this._participants[index].role = role;
     this._participants[index].newClass = this._participants[index].clas;
   }
 
-  updateParticipant(index, newRole, newClass){
+  updateParticipant(index, newRole, newClass, newState) {
     this._participants[index].role = newRole;
     this._participants[index].clas = newClass;
+    this._participants[index].state = newState;
   }
 
   deleteParticipant(index) {

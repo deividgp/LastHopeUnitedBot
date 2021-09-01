@@ -29,9 +29,6 @@ module.exports = {
         required: true,
     }],
     async execute(trials, client, interaction) {
-        if (!interaction.member.permissions.has("ADMINISTRATOR"))
-            return await interaction.reply({ content: 'Not enough permissions', ephemeral: true });
-
         const options = interaction.options;
         const parseDate = moment(`${options.getString('date')} ${options.getString('time')}`, "DD/MM/YYYY HH:mm").toDate();
 

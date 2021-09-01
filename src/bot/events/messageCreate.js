@@ -1,6 +1,6 @@
 const {
     prefix
-} = require.main.require(`../config/${process.env.MODE}.json`);
+} = require(`../../../config/${process.env.MODE}.json`);
 
 module.exports = {
     name: 'messageCreate',
@@ -12,11 +12,5 @@ module.exports = {
             }
             return;
         }
-
-        /*const args = msg.content.slice(prefix.length).split(' ');
-        const command = args.shift().toLowerCase();
-
-        if (client.commands.has(command) && command == "confirmtrial")
-            client.commands.get(command).execute(trials, client, msg, args);*/
     }
 }

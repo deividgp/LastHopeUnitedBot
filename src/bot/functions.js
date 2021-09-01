@@ -80,18 +80,10 @@ const confirmTrial = async (interaction, client) => {
 
             collector.on('collect', (reaction, user) => {
                 if (reaction.emoji.name != '🛑') {
-                    /*let member = interaction.channel.guild.members.cache.find(users => users.id == user.id);
-                    interaction.channel.send(`${member} confirmed attendance.`);*/
                     const index = messageContent.search(user.id);
                     messageContent = messageContent.replaceAt(index + 19, reaction.emoji.name);
                     message.edit(messageContent);
 
-                    /*for (let index = 0; index < idsConfirmation.length; index++) {
-                        if (user.id == idsConfirmation[index]) {
-                            idsConfirmation[index] = undefined;
-                            break;
-                        }
-                    }*/
                 } else {
                     collector.stop('Collector stopped');
                 }

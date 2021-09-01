@@ -5,7 +5,7 @@ const http = require('https');
 require('dotenv').config()
 const {
   token
-} = require(`../config/${process.env.MODE}.json`);
+} = require(`../../config/${process.env.MODE}.json`);
 const {
   isReply,
 } = require('./functions.js');

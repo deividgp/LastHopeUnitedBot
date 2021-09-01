@@ -1,6 +1,6 @@
 {
     "name": "lhubot",
-    "version": "1.7.0",
+    "version": "2.1.0",
     "description": "",
     "main": "index.js",
     "scripts": {
@@ -8,14 +8,14 @@
         "nodemon": "nodemon src/index.js"
     },
     "keywords": [],
-    "author": "",
-    "license": "ISC",
+    "author": "Deividgp",
+    "license": "MIT",
     "dependencies": {
         "@discordjs/rest": "^0.1.0-canary.0",
-        "@google-cloud/translate": "^6.0.5",
+        "@google-cloud/translate": "^6.2.7",
         "cron": "^1.8.2",
         "discord-api-types": "^0.22.0",
-        "discord.js": "^13.0.1",
+        "discord.js": "^13.1.0",
         "dotenv": "^8.2.0",
         "express": "^4.17.1",
         "fs": "^0.0.1-security",

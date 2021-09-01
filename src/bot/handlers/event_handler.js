@@ -2,7 +2,7 @@ const fs = require('fs');
 
 module.exports = (client, trials) => {
     const load_dir = () => {
-        const event_files = fs.readdirSync('./src/events').filter(file => file.endsWith('.js'));
+        const event_files = fs.readdirSync('./src/bot/events').filter(file => file.endsWith('.js'));
 
         for (const file of event_files) {
             const event = require(`../events/${file}`);

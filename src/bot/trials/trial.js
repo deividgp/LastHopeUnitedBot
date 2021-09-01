@@ -4,7 +4,7 @@ const moment = require('moment');
 
 class Trial {
 
-    constructor(id, name, tMax, date, interaction, client) {
+    constructor(id, name, tMax, datetime, interaction, client) {
         this._id = id;
         this._name = name;
         this._hMax = 2;
@@ -13,7 +13,7 @@ class Trial {
         this._hCounter = 0;
         this._tCounter = 0;
         this._ddCounter = 0;
-        this._date = date;
+        this._datetime = moment(datetime, "DD/MM/YYYY HH:mm").toDate();
         this._message = undefined;
         this._participants = new ListParticipants();
         this._client = client;
@@ -52,8 +52,8 @@ class Trial {
         return this._ddCounter;
     }
 
-    get date() {
-        return this._date;
+    get datetime() {
+        return this._datetime;
     }
 
     get participants() {
@@ -100,48 +100,69 @@ class Trial {
         const verify = this.addRole(role);
 
         if (verify) {
-            this._participants.addFullParticipant(id, role);
-            this.editEmbed();
+            this._participants.addParticipant(id, role);
         } else {
             this.subtractRole(role);
+            this._participants.addParticipant(id, role, "backup");
         }
+        this.editEmbed();
         return verify;
     }
 
     deleteParticipantFinal(id) {
         const index = this._participants.findParticipant(id);
         const role = this._participants.participants[index].role;
+        const state = this._participants.participants[index].state;
         this._participants.deleteParticipant(index);
-        this.subtractRole(role);
+        if (state == "in") {
+            this.subtractRole(role);
+        }
+        this.updateBackupParticipant(role);
         this.editEmbed();
     }
 
-    updateParticipantFinal(id, role, clas = undefined) {
+    updateParticipantFinal(id, role) {
         const index = this._participants.findParticipant(id);
         const oldRole = this._participants.participants[index].role;
-        let newClass = "";
-        if (clas == undefined) {
-            newClass = this._participants.participants[index].newClass;
-        } else {
-            newClass = clas;
-        }
+        const oldState = this._participants.participants[index].state;
+        const newClass = this._participants.participants[index].newClass;
 
+        if (oldState == "in") {
+            this.subtractRole(oldRole);
+        }
         const verify = this.addRole(role);
         if (verify) {
-            this.subtractRole(oldRole);
-            this._participants.updateParticipant(index, role, newClass);
-            this.editEmbed();
+            this._participants.updateParticipant(index, role, newClass, "in");
         } else {
             this.subtractRole(role);
+            this._participants.updateParticipant(index, role, newClass, "backup");
         }
+        this.updateBackupParticipant(oldRole);
+        this.editEmbed();
         return verify;
+    }
+
+    updateBackupParticipant(role) {
+        const verify = this.addRole(role);
+        if (verify) {
+            for (let index = 0; index < this._participants._counter; index++) {
+                const element = this._participants.participants[index];
+                if (element.role == role && element.state == "backup") {
+                    element.state = "in";
+                    return;
+                }
+            }
+        }
+        this.subtractRole(role);
     }
 
     async listParticipants(channel) {
         let msgBlock = "";
         for (let index = 0; index < this._participants._counter; index++) {
             const element = this._participants.participants[index];
-            msgBlock = msgBlock + `${this._message.guild.members.cache.find(m => m.id == element.id)} is ${element.role}\n`;
+            if (element.state != "partial") {
+                msgBlock = msgBlock + `${this._message.guild.members.cache.find(m => m.id == element.id)} is **${element.state}** as ${element.clas} ${element.role}\n`;
+            }
         }
         channel.send(msgBlock);
     }
@@ -153,14 +174,16 @@ class Trial {
         trialEmbed.addField('Damage Dealers', `${this._ddCounter}/${this._ddMax}`, true);
         for (let index = 0; index < this._participants._counter; index++) {
             const element = this._participants.participants[index];
-            if (element.state == "full") {
-                let fieldName = "";
-                if (element.role.includes("dd")) {
-                    fieldName = `${this._client.emojis.cache.find(emoji => emoji.name === `${element.role.split(" ")[0]}_${element.clas}`)}`;
-                } else {
+            if (element.state != "partial") {
+                let fieldName = `${this._client.emojis.cache.find(emoji => emoji.name === `${element.role.split(" ")[0]}_${element.clas}`)}`;
+                if (!element.role.includes("dd")) {
                     fieldName = `${this._client.emojis.cache.find(emoji => emoji.name === element.clas)} ${element.role}`;
                 }
-                trialEmbed.addField(fieldName, `${this._message.guild.members.cache.find(m => m.id == element.id)}`, false);
+                let fieldValue = `${this._message.guild.members.cache.find(m => m.id == element.id)}`;
+                if (element.state == "backup") {
+                    fieldValue = `${this._message.guild.members.cache.find(m => m.id == element.id)} (backup)`;
+                }
+                trialEmbed.addField(fieldName, fieldValue, false);
             }
         }
         await this._message.edit({ embeds: [trialEmbed] });
@@ -169,7 +192,7 @@ class Trial {
     async startTrial(interaction) {
         const infoEmbed = new Discord.MessageEmbed()
             .setTitle(`Trial nº ${this._id + 1}: ${this._name}`)
-            .addField('Date (UTC)', `${this._date}`, false)
+            .addField('Date and time', `<t:${this._datetime.getTime() / 1000}>`, false)
         const participantsEmbed = new Discord.MessageEmbed()
             .addFields(
                 { name: 'Tanks', value: `0/${this._tMax}`, inline: true },
@@ -242,8 +265,8 @@ class Trial {
                     .setEmoji('🗑'),
             );
 
-        const parseDate = moment(this._date, "DD/MM/YYYY HH:mm").toDate();
-        const time = parseDate.setMinutes(parseDate.getMinutes() - 15) - new Date();
+        const auxDatetime = new Date(this._datetime.getTime());
+        const time = auxDatetime.setMinutes(auxDatetime.getMinutes() - 15) - new Date();
         this._message = await interaction.channel.send({ embeds: [participantsEmbed] });
         const messageReaction = await interaction.reply({ embeds: [infoEmbed], components: [classesRow, rolesRow], fetchReply: true });
 
@@ -251,7 +274,8 @@ class Trial {
 
         collector.on('collect', async i => {
             if (i.isSelectMenu()) {
-                await i.reply({ content: `${i.values[0]} selected. Now select a role.`, ephemeral: true });
+                const clas = i.values[0];
+                await i.reply({ content: `${clas.charAt(0).toUpperCase() + clas.slice(1)} selected. Now select a role.`, ephemeral: true });
                 this._participants.addPartialParticipant(i.user.id, i.values[0]);
             } else if (i.isButton()) {
 
@@ -279,7 +303,7 @@ class Trial {
                                 if (update) {
                                     return await i.reply({ content: 'Role updated succesfully', ephemeral: true });
                                 }
-                                return await i.reply({ content: 'Unavailable', ephemeral: true });
+                                return await i.reply({ content: 'Added as backup', ephemeral: true });
                             } else {
                                 return await i.reply({ content: 'Need to select a class', ephemeral: true });
                             }
@@ -303,7 +327,7 @@ class Trial {
                         const findResult = this._participants.findParticipant(i.user.id);
                         return await i.reply({ content: 'Added', ephemeral: true });
                     }
-                    await i.reply({ content: 'Unavailable', ephemeral: true });
+                    await i.reply({ content: 'Added as backup', ephemeral: true });
                 }
             }
         });
