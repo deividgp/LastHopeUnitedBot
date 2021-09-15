@@ -27,13 +27,24 @@ module.exports = {
         type: ApplicationCommandOptionType.String,
         description: 'Time in UTC',
         required: true,
+    },
+    {
+        name: 'multirole',
+        type: ApplicationCommandOptionType.Boolean,
+        description: 'Time in UTC',
+        required: true,
     }],
     async execute(trials, client, interaction) {
         const options = interaction.options;
-        const parseDate = moment(`${options.getString('date')} ${options.getString('time')}`, "DD/MM/YYYY HH:mm").toDate();
+        const trial = options.getString('trial');
+        const tanks = options.getInteger('tanks');
+        const date = options.getString('date');
+        const time = options.getString('time');
+        const multirole = options.getBoolean('multirole');
+        const datetime = moment(`${date} ${time}`, "DD/MM/YYYY HH:mm").toDate();
 
-        if (options.getInteger('tanks') >= 1 && options.getString('date').length == 10 && options.getString('time').length == 5 && new Date() < parseDate)
-            return trials.addTrial(interaction, client);
+        if (tanks >= 1 && date.length == 10 && time.length == 5 && new Date() < datetime)
+            return trials.addTrial(trial, tanks, datetime, multirole, interaction, client);
 
         return await interaction.reply({ content: `Couldn't create trial`, ephemeral: true });
     }

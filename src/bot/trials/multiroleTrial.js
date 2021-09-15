@@ -1,7 +1,7 @@
-const ListParticipants = require('../participants/listParticipants.js');
 const Discord = require('discord.js');
+const ListMultiroleParticipants = require('../participants/listMultiroleParticipants.js');
 
-class Trial {
+class MultiroleTrial {
 
     constructor(id, trial, tanks, datetime, interaction, client) {
         this._id = id;
@@ -14,7 +14,7 @@ class Trial {
         this._ddCounter = 0;
         this._datetime = datetime;
         this._message = undefined;
-        this._participants = new ListParticipants();
+        this._participants = new ListMultiroleParticipants();
         this._client = client;
         this.startTrial(interaction);
     }
@@ -95,50 +95,77 @@ class Trial {
         }
     }
 
-    addParticipantFinal(id, role) {
+    addParticipantFinal(participant, role) {
         const verify = this.addRole(role);
 
         if (verify) {
-            this._participants.addParticipant(id, role);
+            this._participants.addParticipant(participant, role);
         } else {
             this.subtractRole(role);
-            this._participants.addParticipant(id, role, "backup");
+            this._participants.addParticipant(participant, role, "backup");
         }
         this.editEmbed();
         return verify;
     }
 
-    deleteParticipantFinal(id) {
-        const index = this._participants.findParticipant(id);
-        const role = this._participants.participants[index].role;
-        const state = this._participants.participants[index].state;
-        this._participants.deleteParticipant(index);
+    deleteParticipantFinal(participant) {
+        const mainChar = participant.characters.getMainCharacter();
+        const state = participant.state;
+        this._participants.deleteParticipant(participant);
         if (state == "in") {
-            this.subtractRole(role);
+            this.subtractRole(mainChar.role);
         }
-        this.updateBackupParticipant(role);
+        this.updateBackupParticipant(mainChar.role);
         this.editEmbed();
     }
 
-    updateParticipantFinal(id, role) {
-        const index = this._participants.findParticipant(id);
-        const oldRole = this._participants.participants[index].role;
-        const oldState = this._participants.participants[index].state;
-        const newClass = this._participants.participants[index].newClass;
+    updateCharMain(participant, role) {
+        if (!participant.characters.getCharacter(role)) {
+            return undefined;
+        }
 
-        if (oldState == "in") {
-            this.subtractRole(oldRole);
+        const oldMainChar = participant.characters.getMainCharacter();
+        oldMainChar.main = false;
+
+        if (participant.state == "in") {
+            this.subtractRole(oldMainChar.role);
         }
         const verify = this.addRole(role);
         if (verify) {
-            this._participants.updateParticipant(index, role, newClass, "in");
+            this._participants.updateCharMain(participant, role, "in");
         } else {
             this.subtractRole(role);
-            this._participants.updateParticipant(index, role, newClass, "backup");
+            this._participants.updateCharMain(participant, role, "backup");
         }
-        this.updateBackupParticipant(oldRole);
+        this.updateBackupParticipant(oldMainChar.role);
         this.editEmbed();
         return verify;
+    }
+
+    updateChar(participant, role) {
+        if (participant.newClass != undefined) {
+            participant.characters.updateCharacter(participant.newClass, role);
+            this.editEmbed();
+            return true;
+        }
+        return false;
+    }
+
+    deleteChar(participant, role) {
+        const char = participant.characters.getCharacter(role);
+
+        if (char == false) {
+            return undefined;
+        }
+
+        if (char.main == true) {
+            return false;
+        }
+
+        participant.characters.updateCharacter(undefined, role);
+        this.editEmbed();
+
+        return true;
     }
 
     updateBackupParticipant(role) {
@@ -146,7 +173,8 @@ class Trial {
         if (verify) {
             for (let index = 0; index < this._participants._counter; index++) {
                 const element = this._participants.participants[index];
-                if (element.role == role && element.state == "backup") {
+                const mainChar = this._participants.participants[index].characters.getMainCharacter();
+                if (mainChar.role == role && element.state == "backup") {
                     element.state = "in";
                     return;
                 }
@@ -159,8 +187,9 @@ class Trial {
         let msgBlock = "";
         for (let index = 0; index < this._participants._counter; index++) {
             const element = this._participants.participants[index];
+            const mainChar = participant.characters.getMainCharacter();
             if (element.state != "partial") {
-                msgBlock = msgBlock + `${this._message.guild.members.cache.find(m => m.id == element.id)} is **${element.state}** as ${element.clas} ${element.role}\n`;
+                msgBlock = msgBlock + `${this._message.guild.members.cache.find(m => m.id == element.id)} is **${element.state}** as ${mainChar.clas} ${mainChar.role}\n`;
             }
         }
         channel.send(msgBlock);
@@ -172,17 +201,31 @@ class Trial {
         trialEmbed.addField('Healers', `${this._hCounter}/${this._hMax}`, true);
         trialEmbed.addField('Damage Dealers', `${this._ddCounter}/${this._ddMax}`, true);
         for (let index = 0; index < this._participants._counter; index++) {
-            const element = this._participants.participants[index];
-            if (element.state != "partial") {
-                let fieldName = `${this._client.emojis.cache.find(emoji => emoji.name === `${element.role.split(" ")[0]}_${element.clas}`)}`;
-                if (!element.role.includes("dd")) {
-                    fieldName = `${this._client.emojis.cache.find(emoji => emoji.name === element.clas)} ${element.role}`;
+            const participant = this._participants.participants[index];
+            if (participant.state != "partial") {
+                let fieldName = "";
+                const mainChar = participant.characters.getMainCharacter();
+                if (!mainChar.role.includes("dd")) {
+                    fieldName = fieldName + `${this._client.emojis.cache.find(emoji => emoji.name === mainChar.clas)} ${mainChar.role}  `;
+                } else {
+                    fieldName = fieldName + `${this._client.emojis.cache.find(emoji => emoji.name === `${mainChar.role.split(" ")[0]}_${mainChar.clas}`)}  `;
                 }
-                let fieldValue = `${this._message.guild.members.cache.find(m => m.id == element.id)}`;
-                if (element.state == "backup") {
-                    fieldValue = `${this._message.guild.members.cache.find(m => m.id == element.id)} (backup)`;
+                if (participant.state == "backup") {
+                    fieldName = fieldName + "(backup)  "
                 }
+                for (const character of participant.characters.characters) {
+
+                    if (character.clas != undefined && character.main == false) {
+                        if (!character.role.includes("dd")) {
+                            fieldName = fieldName + `${this._client.emojis.cache.find(emoji => emoji.name === character.clas)} ${character.role}  `;
+                        } else {
+                            fieldName = fieldName + `${this._client.emojis.cache.find(emoji => emoji.name === `${character.role.split(" ")[0]}_${character.clas}`)}  `;
+                        }
+                    }
+                }
+                const fieldValue = `${this._message.guild.members.cache.find(m => m.id == participant.id)}`;
                 trialEmbed.addField(fieldName, fieldValue, false);
+                fieldName = "";
             }
         }
         await this._message.edit({ embeds: [trialEmbed] });
@@ -202,7 +245,7 @@ class Trial {
             .addComponents(
                 new Discord.MessageSelectMenu()
                     .setCustomId('class')
-                    .setPlaceholder('Class')
+                    .setPlaceholder('Class & Role options')
                     .addOptions([
                         {
                             label: 'Dragonknight',
@@ -233,6 +276,14 @@ class Trial {
                             label: 'Necromancer',
                             value: 'necromancer',
                             emoji: '876758967005622302',
+                        },
+                        {
+                            label: 'Set main role',
+                            value: 'main',
+                        },
+                        {
+                            label: 'Delete role',
+                            value: 'delete',
                         },
                     ]),
             );
@@ -272,16 +323,25 @@ class Trial {
         const collector = messageReaction.createMessageComponentCollector({ time: time });
 
         collector.on('collect', async i => {
+            const findResult = this._participants.findParticipant(i.user.id);
             if (i.isSelectMenu()) {
                 const clas = i.values[0];
-                await i.reply({ content: `${clas.charAt(0).toUpperCase() + clas.slice(1)} selected. Now select a role.`, ephemeral: true });
-                this._participants.addPartialParticipant(i.user.id, i.values[0]);
+
+                if ((clas == "main" || clas == "delete") && findResult != undefined) {
+                    findResult.newClass = undefined;
+                    findResult.option = clas;
+                    return await i.reply({ content: 'Option registered', ephemeral: true });
+                } else if ((clas == "main" || clas == "delete") && findResult == undefined) {
+                    return await i.reply({ content: 'You are not signed up', ephemeral: true });
+                }
+
+                this._participants.addPartialParticipant(i.user.id, clas);
+                return await i.reply({ content: `${clas.charAt(0).toUpperCase() + clas.slice(1)} selected. Now select a role.`, ephemeral: true });
             } else if (i.isButton()) {
 
-                const findResult = this._participants.findParticipant(i.user.id);
                 if (i.customId == 'delete') {
                     if (findResult != undefined) {
-                        this.deleteParticipantFinal(i.user.id);
+                        this.deleteParticipantFinal(findResult);
                         return await i.reply({ content: 'Removed', ephemeral: true });
                     } else {
                         return await i.reply({ content: 'You are not signed up', ephemeral: true });
@@ -289,39 +349,43 @@ class Trial {
                 }
 
                 const findPartialResult = this._participants.findPartialParticipant(i.user.id);
-                if (findPartialResult == undefined) {
 
-                    const foundParticipant = this._participants.participants[findResult];
+                if (findPartialResult == undefined) {
                     if (findResult == undefined) {
                         return await i.reply({ content: 'Select a class first', ephemeral: true });
                     } else {
-                        // Not the same role
-                        if (this._participants.findParticipant(i.user.id, i.customId) == undefined) {
-                            if (foundParticipant.newClass != undefined) {
-                                const update = this.updateParticipantFinal(i.user.id, i.customId);
+                        switch (findResult.option) {
+                            case "main":
+                                const updateMain = this.updateCharMain(findResult, i.customId);
+                                switch (updateMain) {
+                                    case undefined:
+                                        return await i.reply({ content: 'Need to define the role first (add a class)', ephemeral: true });
+                                    case true:
+                                        return await i.reply({ content: 'Updated succesfully', ephemeral: true });
+                                    case false:
+                                        return await i.reply({ content: 'Added as backup', ephemeral: true });
+                                }
+                            case "delete":
+                                const deleteChar = this.deleteChar(findResult, i.customId);
+                                switch (deleteChar) {
+                                    case undefined:
+                                        return await i.reply({ content: 'Role not defined (class)', ephemeral: true });
+                                    case true:
+                                        return await i.reply({ content: 'Deleted succesfully', ephemeral: true });
+                                    case false:
+                                        return await i.reply({ content: "Can't delete main roles. Need to set another main role", ephemeral: true });
+                                }
+                            default:
+                                const update = this.updateChar(findResult, i.customId);
                                 if (update) {
-                                    return await i.reply({ content: 'Role updated succesfully', ephemeral: true });
+                                    return await i.reply({ content: "Role updated succesfully", ephemeral: true });
                                 }
-                                return await i.reply({ content: 'Added as backup', ephemeral: true });
-                            } else {
-                                return await i.reply({ content: 'Need to select a class', ephemeral: true });
-                            }
-                            // Same role
-                        } else {
-                            if (foundParticipant.newClass != undefined) {
-                                if (foundParticipant.clas != foundParticipant.newClass) {
-                                    foundParticipant.clas = foundParticipant.newClass;
-                                    this.editEmbed();
-                                    return await i.reply({ content: 'Class updated successfully', ephemeral: true });
-                                } else {
-                                    return await i.reply({ content: 'Same class', ephemeral: true });
-                                }
-                            }
-                            return await i.reply({ content: 'Same role and class not specified', ephemeral: true });
+                                return await i.reply({ content: "Need to select an option first", ephemeral: true });
+
                         }
                     }
                 } else {
-                    const add = this.addParticipantFinal(i.user.id, i.customId);
+                    const add = this.addParticipantFinal(findResult, i.customId);
                     if (add) {
                         return await i.reply({ content: 'Added', ephemeral: true });
                     }
@@ -335,4 +399,4 @@ class Trial {
         });
     }
 }
-module.exports = Trial;
+module.exports = MultiroleTrial;

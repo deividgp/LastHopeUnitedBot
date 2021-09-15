@@ -1,4 +1,5 @@
 const Trial = require('./trial.js');
+const MultiroleTrial = require('./multiroleTrial.js');
 
 class ListTrials {
   constructor() {
@@ -14,8 +15,13 @@ class ListTrials {
     return this._counter;
   }
 
-  addTrial(interaction, client) {
-    this._trials[this._counter] = new Trial(this._counter, interaction.options.getString('trial'), interaction.options.getInteger('tanks'), `${interaction.options.getString('date')} ${interaction.options.getString('time')}`, interaction, client);
+  addTrial(trial, tanks, datetime, multirole, interaction, client) {
+    if (multirole) {
+      this._trials[this._counter] = new MultiroleTrial(this._counter, trial, tanks, datetime, interaction, client);
+    } else {
+      this._trials[this._counter] = new Trial(this._counter, trial, tanks, datetime, interaction, client);
+    }
+
     this._counter++;
   }
 }

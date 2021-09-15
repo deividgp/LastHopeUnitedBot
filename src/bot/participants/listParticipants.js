@@ -1,5 +1,4 @@
 const Participant = require('./participant.js');
-const Discord = require('discord.js');
 
 class ListParticipants {
   constructor() {
