@@ -328,7 +328,6 @@ class MultiroleTrial {
                 const clas = i.values[0];
 
                 if ((clas == "main" || clas == "delete") && findResult != undefined) {
-                    findResult.newClass = undefined;
                     findResult.option = clas;
                     return await i.reply({ content: 'Option registered', ephemeral: true });
                 } else if ((clas == "main" || clas == "delete") && findResult == undefined) {

@@ -10,14 +10,14 @@ const deploy = async (client) => {
     try {
         console.log('Started refreshing application (/) commands.');
 
-        // await rest.put(
-        //     Routes.applicationCommands(client_id),
-        //     { body: commands },
-        // );
         await rest.put(
-            Routes.applicationGuildCommands(client_id, '874602860699082774'),
+            Routes.applicationCommands(client_id),
             { body: commands },
         );
+        // await rest.put(
+        //     Routes.applicationGuildCommands(client_id, '811207960658444338'),
+        //     { body: commands },
+        // );
         console.log('Successfully reloaded application (/) commands.');
     } catch (error) {
         console.error(error);

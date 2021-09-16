@@ -95,24 +95,23 @@ class Trial {
         }
     }
 
-    addParticipantFinal(id, role) {
+    addParticipantFinal(participant, role) {
         const verify = this.addRole(role);
 
         if (verify) {
-            this._participants.addParticipant(id, role);
+            this._participants.updateParticipant(participant, role, "in");
         } else {
             this.subtractRole(role);
-            this._participants.addParticipant(id, role, "backup");
+            this._participants.updateParticipant(participant, role, "backup");
         }
         this.editEmbed();
         return verify;
     }
 
-    deleteParticipantFinal(id) {
-        const index = this._participants.findParticipant(id);
-        const role = this._participants.participants[index].role;
-        const state = this._participants.participants[index].state;
-        this._participants.deleteParticipant(index);
+    deleteParticipantFinal(participant) {
+        const role = participant.character.role;
+        const state = participant.state;
+        this._participants.deleteParticipant(participant);
         if (state == "in") {
             this.subtractRole(role);
         }
@@ -120,21 +119,19 @@ class Trial {
         this.editEmbed();
     }
 
-    updateParticipantFinal(id, role) {
-        const index = this._participants.findParticipant(id);
-        const oldRole = this._participants.participants[index].role;
-        const oldState = this._participants.participants[index].state;
-        const newClass = this._participants.participants[index].newClass;
+    updateParticipantFinal(participant, role) {
+        const oldRole = participant.character.role;
+        const oldState = participant.state;
 
         if (oldState == "in") {
             this.subtractRole(oldRole);
         }
         const verify = this.addRole(role);
         if (verify) {
-            this._participants.updateParticipant(index, role, newClass, "in");
+            this._participants.updateParticipant(participant, role, "in", true);
         } else {
             this.subtractRole(role);
-            this._participants.updateParticipant(index, role, newClass, "backup");
+            this._participants.updateParticipant(participant, role, "backup", true);
         }
         this.updateBackupParticipant(oldRole);
         this.editEmbed();
@@ -146,7 +143,7 @@ class Trial {
         if (verify) {
             for (let index = 0; index < this._participants._counter; index++) {
                 const element = this._participants.participants[index];
-                if (element.role == role && element.state == "backup") {
+                if (element.character.role == role && element.state == "backup") {
                     element.state = "in";
                     return;
                 }
@@ -160,7 +157,7 @@ class Trial {
         for (let index = 0; index < this._participants._counter; index++) {
             const element = this._participants.participants[index];
             if (element.state != "partial") {
-                msgBlock = msgBlock + `${this._message.guild.members.cache.find(m => m.id == element.id)} is **${element.state}** as ${element.clas} ${element.role}\n`;
+                msgBlock = msgBlock + `${this._message.guild.members.cache.find(m => m.id == element.id)} is **${element.state}** as ${element.character.clas} ${element.character.role}\n`;
             }
         }
         channel.send(msgBlock);
@@ -174,9 +171,9 @@ class Trial {
         for (let index = 0; index < this._participants._counter; index++) {
             const element = this._participants.participants[index];
             if (element.state != "partial") {
-                let fieldName = `${this._client.emojis.cache.find(emoji => emoji.name === `${element.role.split(" ")[0]}_${element.clas}`)}`;
-                if (!element.role.includes("dd")) {
-                    fieldName = `${this._client.emojis.cache.find(emoji => emoji.name === element.clas)} ${element.role}`;
+                let fieldName = `${this._client.emojis.cache.find(emoji => emoji.name === `${element.character.role.split(" ")[0]}_${element.character.clas}`)}`;
+                if (!element.character.role.includes("dd")) {
+                    fieldName = `${this._client.emojis.cache.find(emoji => emoji.name === element.character.clas)} ${element.character.role}`;
                 }
                 let fieldValue = `${this._message.guild.members.cache.find(m => m.id == element.id)}`;
                 if (element.state == "backup") {
@@ -281,7 +278,7 @@ class Trial {
                 const findResult = this._participants.findParticipant(i.user.id);
                 if (i.customId == 'delete') {
                     if (findResult != undefined) {
-                        this.deleteParticipantFinal(i.user.id);
+                        this.deleteParticipantFinal(findResult);
                         return await i.reply({ content: 'Removed', ephemeral: true });
                     } else {
                         return await i.reply({ content: 'You are not signed up', ephemeral: true });
@@ -290,38 +287,17 @@ class Trial {
 
                 const findPartialResult = this._participants.findPartialParticipant(i.user.id);
                 if (findPartialResult == undefined) {
-
-                    const foundParticipant = this._participants.participants[findResult];
                     if (findResult == undefined) {
                         return await i.reply({ content: 'Select a class first', ephemeral: true });
                     } else {
-                        // Not the same role
-                        if (this._participants.findParticipant(i.user.id, i.customId) == undefined) {
-                            if (foundParticipant.newClass != undefined) {
-                                const update = this.updateParticipantFinal(i.user.id, i.customId);
-                                if (update) {
-                                    return await i.reply({ content: 'Role updated succesfully', ephemeral: true });
-                                }
-                                return await i.reply({ content: 'Added as backup', ephemeral: true });
-                            } else {
-                                return await i.reply({ content: 'Need to select a class', ephemeral: true });
-                            }
-                            // Same role
-                        } else {
-                            if (foundParticipant.newClass != undefined) {
-                                if (foundParticipant.clas != foundParticipant.newClass) {
-                                    foundParticipant.clas = foundParticipant.newClass;
-                                    this.editEmbed();
-                                    return await i.reply({ content: 'Class updated successfully', ephemeral: true });
-                                } else {
-                                    return await i.reply({ content: 'Same class', ephemeral: true });
-                                }
-                            }
-                            return await i.reply({ content: 'Same role and class not specified', ephemeral: true });
+                        const update = this.updateParticipantFinal(findResult, i.customId);
+                        if (update) {
+                            return await i.reply({ content: 'Role updated succesfully', ephemeral: true });
                         }
+                        return await i.reply({ content: 'Added as backup', ephemeral: true });
                     }
                 } else {
-                    const add = this.addParticipantFinal(i.user.id, i.customId);
+                    const add = this.addParticipantFinal(findResult, i.customId);
                     if (add) {
                         return await i.reply({ content: 'Added', ephemeral: true });
                     }

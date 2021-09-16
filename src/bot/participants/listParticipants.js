@@ -19,34 +19,32 @@ class ListParticipants {
   }
 
   addPartialParticipant(id, clas) {
-    const index = this.findParticipant(id);
-    if (index == undefined) {
+    const participant = this.findParticipant(id);
+    if (participant == undefined) {
       this._participants[this._counter] = new Participant(id, clas);
       this._counter++;
     } else {
-      if (this.findPartialParticipant(id) == undefined) {
-        this._participants[index].newClass = clas;
-      } else {
-        this._participants[index].clas = clas;
-      }
+      participant.newClass = clas;
     }
   }
 
-  addParticipant(id, role, state = "in") {
-    const index = this.findParticipant(id);
-    this._participants[index].state = state;
-    this._participants[index].role = role;
-    this._participants[index].newClass = this._participants[index].clas;
+  updateParticipant(participant, role, state, update = false) {
+    participant.state = state;
+    participant.character.role = role;
+    participant.character.clas = participant.newClass;
   }
 
-  updateParticipant(index, newRole, newClass, newState) {
-    this._participants[index].role = newRole;
-    this._participants[index].clas = newClass;
-    this._participants[index].state = newState;
-  }
+  deleteParticipant(participant) {
+    let index3;
+    for (let index = 0; index < this._counter; index++) {
+      const element = this._participants[index];
 
-  deleteParticipant(index) {
-    for (let index2 = index + 1; index2 < this._counter; index2++) {
+      if (participant === element) {
+        index3 = index;
+      }
+    }
+
+    for (let index2 = index3 + 1; index2 < this._counter; index2++) {
       const element = this._participants[index2];
       this._participants[index2 - 1] = element;
     }
@@ -55,15 +53,14 @@ class ListParticipants {
     this._participants[this._counter] = undefined;
   }
 
-  findParticipant(id, role = '') {
+  findParticipant(id) {
     for (let index = 0; index < this._counter; index++) {
       const element = this._participants[index];
 
-      if (element.id === id && (role === '' || (role != '' && element.role === role))) {
-        return index;
+      if (element.id === id) {
+        return element;
       }
     }
-
     return undefined;
   }
 
@@ -72,10 +69,9 @@ class ListParticipants {
       const element = this._participants[index];
 
       if (element.id === id && element.state == "partial") {
-        return index;
+        return element;
       }
     }
-
     return undefined;
   }
 }

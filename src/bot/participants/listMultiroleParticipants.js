@@ -66,19 +66,16 @@ class ListMultiroleParticipants {
   findParticipant(id) {
     for (let index = 0; index < this._counter; index++) {
       const element = this._participants[index];
-
       if (element.id === id) {
         return element;
       }
     }
-
     return undefined;
   }
 
   findPartialParticipant(id) {
     for (let index = 0; index < this._counter; index++) {
       const element = this._participants[index];
-
       if (element.id === id && element.state == "partial") {
         return element;
       }
