@@ -27,6 +27,13 @@ module.exports = {
         if (trialid == 0 || (trialid - 1) > trials._counter)
             return await interaction.reply({ content: 'The first argument is invalid', ephemeral: true });
 
-        trials._trials[trialid - 1].deleteParticipantFinal(userid);
+        const trial = trials.trials[trialid - 1];
+        const participant = trial.participants.getParticipant(userid);
+
+        if(participant == undefined){
+            return await interaction.reply({ content: 'The participant is not registered', ephemeral: true });
+        }
+        trial.deleteParticipantFinal(participant);
+        return await interaction.reply({ content: 'Deleted succesfully', ephemeral: true });
     }
 }

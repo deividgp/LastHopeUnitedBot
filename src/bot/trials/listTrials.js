@@ -15,11 +15,11 @@ class ListTrials {
     return this._counter;
   }
 
-  addTrial(trial, tanks, datetime, multirole, interaction, client) {
+  addTrial(trial, tanks, datetime, multirole, description, interaction, client) {
     if (multirole) {
-      this._trials[this._counter] = new MultiroleTrial(this._counter, trial, tanks, datetime, interaction, client);
+      this._trials[this._counter] = new MultiroleTrial(this._counter, trial, tanks, datetime, description, interaction, client);
     } else {
-      this._trials[this._counter] = new Trial(this._counter, trial, tanks, datetime, interaction, client);
+      this._trials[this._counter] = new Trial(this._counter, trial, tanks, datetime, description, interaction, client);
     }
 
     this._counter++;

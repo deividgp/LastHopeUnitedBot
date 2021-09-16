@@ -85,8 +85,10 @@ module.exports = {
         if (trialid == 0 || (trialid - 1) > trials._counter)
             return await interaction.reply({ content: 'The first argument is invalid', ephemeral: true });
 
-        trials._trials[trialid - 1]._participants.addPartialParticipant(userid, clas);
-        const add = trials._trials[trialid - 1].addParticipantFinal(userid, role);
+        const trial = trials.trials[trialid - 1];
+        trial.participants.addPartialParticipant(userid, clas);
+        const add = trial.addParticipantFinal(trial.participants.getParticipant(userid), role);
+        
         if (!add){
             return await interaction.reply({ content: "Can't add participant", ephemeral: true });
         }

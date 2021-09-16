@@ -3,7 +3,7 @@ const ListMultiroleParticipants = require('../participants/listMultiroleParticip
 
 class MultiroleTrial {
 
-    constructor(id, trial, tanks, datetime, interaction, client) {
+    constructor(id, trial, tanks, datetime, description, interaction, client) {
         this._id = id;
         this._name = trial;
         this._hMax = 2;
@@ -13,6 +13,7 @@ class MultiroleTrial {
         this._tCounter = 0;
         this._ddCounter = 0;
         this._datetime = datetime;
+        this._description = description;
         this._message = undefined;
         this._participants = new ListMultiroleParticipants();
         this._client = client;
@@ -235,6 +236,9 @@ class MultiroleTrial {
         const infoEmbed = new Discord.MessageEmbed()
             .setTitle(`Trial nº ${this._id + 1}: ${this._name}`)
             .addField('Date and time', `<t:${this._datetime.getTime() / 1000}>`, false)
+        if (this._description != undefined) {
+            infoEmbed.setDescription(this._description);
+        }
         const participantsEmbed = new Discord.MessageEmbed()
             .addFields(
                 { name: 'Tanks', value: `0/${this._tMax}`, inline: true },
@@ -323,7 +327,7 @@ class MultiroleTrial {
         const collector = messageReaction.createMessageComponentCollector({ time: time });
 
         collector.on('collect', async i => {
-            const findResult = this._participants.findParticipant(i.user.id);
+            const findResult = this._participants.getParticipant(i.user.id);
             if (i.isSelectMenu()) {
                 const clas = i.values[0];
 
@@ -347,9 +351,9 @@ class MultiroleTrial {
                     }
                 }
 
-                const findPartialResult = this._participants.findPartialParticipant(i.user.id);
+                const partialPart = this._participants.getPartialParticipant(i.user.id);
 
-                if (findPartialResult == undefined) {
+                if (partialPart == undefined) {
                     if (findResult == undefined) {
                         return await i.reply({ content: 'Select a class first', ephemeral: true });
                     } else {

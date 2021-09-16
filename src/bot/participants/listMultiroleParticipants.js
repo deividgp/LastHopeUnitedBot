@@ -19,7 +19,7 @@ class ListMultiroleParticipants {
   }
 
   addPartialParticipant(id, clas) {
-    const participant = this.findParticipant(id);
+    const participant = this.getParticipant(id);
     if (participant == undefined) {
       this._participants[this._counter] = new MultiroleParticipant(id, clas);
       this._counter++;
@@ -63,7 +63,7 @@ class ListMultiroleParticipants {
     this._participants[this._counter] = undefined;
   }
 
-  findParticipant(id) {
+  getParticipant(id) {
     for (let index = 0; index < this._counter; index++) {
       const element = this._participants[index];
       if (element.id === id) {
@@ -73,7 +73,7 @@ class ListMultiroleParticipants {
     return undefined;
   }
 
-  findPartialParticipant(id) {
+  getPartialParticipant(id) {
     for (let index = 0; index < this._counter; index++) {
       const element = this._participants[index];
       if (element.id === id && element.state == "partial") {

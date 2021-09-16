@@ -19,7 +19,7 @@ class ListParticipants {
   }
 
   addPartialParticipant(id, clas) {
-    const participant = this.findParticipant(id);
+    const participant = this.getParticipant(id);
     if (participant == undefined) {
       this._participants[this._counter] = new Participant(id, clas);
       this._counter++;
@@ -53,7 +53,7 @@ class ListParticipants {
     this._participants[this._counter] = undefined;
   }
 
-  findParticipant(id) {
+  getParticipant(id) {
     for (let index = 0; index < this._counter; index++) {
       const element = this._participants[index];
 
@@ -64,7 +64,7 @@ class ListParticipants {
     return undefined;
   }
 
-  findPartialParticipant(id) {
+  getPartialParticipant(id) {
     for (let index = 0; index < this._counter; index++) {
       const element = this._participants[index];
 

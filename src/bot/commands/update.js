@@ -84,7 +84,19 @@ module.exports = {
         if (trialid == 0 || (trialid - 1) > trials._counter)
             return await interaction.reply({ content: 'The first argument is invalid', ephemeral: true });
 
-        const update = trials._trials[trialid - 1].updateParticipantFinal(userid, role, clas);
+        const trial = trials.trials[trialid - 1];
+        const participant = trial.participants.getParticipant(userid);
+
+        if(participant == undefined){
+            return await interaction.reply({ content: 'The participant is not registered', ephemeral: true });
+        }
+        
+        let update;
+        if (typeof trial == "Trial") {
+            update = trial.updateParticipantFinal(participant, role, clas);
+        } else if (typeof trial == "MultiroleTrial") {
+            update = trial.updateChar(participant, role);
+        }
 
         if (!update) {
             return await interaction.reply({ content: "Can't update participant", ephemeral: true });
