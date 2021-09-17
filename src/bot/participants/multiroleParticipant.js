@@ -8,6 +8,7 @@ class MultiroleParticipant {
         this._newClass = clas;
         this._option = undefined;
         this._state = "partial";
+        this._portal = false;
     }
 
     get characters() {
@@ -40,6 +41,14 @@ class MultiroleParticipant {
 
     set option(option) {
         this._option = option;
+    }
+
+    get portal() {
+        return this._portal;
+    }
+
+    set portal(portal) {
+        this._portal = portal;
     }
 }
 module.exports = MultiroleParticipant;

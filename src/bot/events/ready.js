@@ -19,26 +19,18 @@ module.exports = {
         }, 4000);
       })
       .catch(console.error);*/
-    // client.channels.fetch('811207960701042713')
-    //   .then(channel => {
-    //     channel.bulkDelete(6);
-    //     setTimeout(async function () {
-    //       await assignRole(channel, "811207960671813646");
-    //     }, 4000);
-    //     setTimeout(async function () {
-    //       await assignRole(channel, "811207960691867663");
-    //     }, 4000);
-        
-    //   })
-    //   .catch(console.error);
-    /*client.channels.fetch('863732362495262741')
+    client.channels.fetch('811207960701042713')
       .then(channel => {
         channel.bulkDelete(6);
         setTimeout(async function () {
-          await assignRole(channel, "712978610562269235");
+          await assignRole(channel, "811207960671813646");
         }, 4000);
+        setTimeout(async function () {
+          await assignRole(channel, "811207960691867663");
+        }, 4000);
+
       })
-      .catch(console.error);*/
+      .catch(console.error);
 
     deploy(client);
   }

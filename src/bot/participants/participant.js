@@ -6,6 +6,7 @@ class Participant {
         this._character = new Character(undefined, undefined, false);
         this._newClass = clas;
         this._state = "partial";
+        this._portal = false;
     }
 
     get id() {
@@ -30,6 +31,14 @@ class Participant {
 
     get character() {
         return this._character;
+    }
+
+    get portal() {
+        return this._portal;
+    }
+
+    set portal(portal) {
+        this._portal = portal;
     }
 }
 module.exports = Participant;

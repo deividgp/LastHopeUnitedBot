@@ -127,6 +127,7 @@ class MultiroleTrial {
 
         const oldMainChar = participant.characters.getMainCharacter();
         oldMainChar.main = false;
+        participant.portal = false;
 
         if (participant.state == "in") {
             this.subtractRole(oldMainChar.role);
@@ -214,6 +215,9 @@ class MultiroleTrial {
                 if (participant.state == "backup") {
                     fieldName = fieldName + "(backup)  "
                 }
+                if (participant.portal == true) {
+                    fieldName = fieldName + "(portal)  "
+                }
                 for (const character of participant.characters.characters) {
 
                     if (character.clas != undefined && character.main == false) {
@@ -245,11 +249,39 @@ class MultiroleTrial {
                 { name: 'Healers', value: `0/2`, inline: true },
                 { name: 'Damage Dealers', value: `0/${this._ddMax}`, inline: true },
             )
+        const optionsRow = new Discord.MessageActionRow()
+            .addComponents(
+                new Discord.MessageSelectMenu()
+                    .setCustomId('option')
+                    .setPlaceholder('Options')
+                    .addOptions([
+                        {
+                            label: 'Set main role',
+                            value: 'main',
+                        },
+                        {
+                            label: 'Delete role',
+                            value: 'deleteRole',
+                        },
+                        {
+                            label: 'Set main dd portal (if applies)',
+                            value: 'portal',
+                        },
+                        {
+                            label: 'Remove portal',
+                            value: 'removeportal',
+                        },
+                        {
+                            label: 'Delete sign up',
+                            value: 'delete',
+                        },
+                    ]),
+            );
         const classesRow = new Discord.MessageActionRow()
             .addComponents(
                 new Discord.MessageSelectMenu()
                     .setCustomId('class')
-                    .setPlaceholder('Class & Role options')
+                    .setPlaceholder('Classes')
                     .addOptions([
                         {
                             label: 'Dragonknight',
@@ -280,15 +312,7 @@ class MultiroleTrial {
                             label: 'Necromancer',
                             value: 'necromancer',
                             emoji: '876758967005622302',
-                        },
-                        {
-                            label: 'Set main role',
-                            value: 'main',
-                        },
-                        {
-                            label: 'Delete role',
-                            value: 'delete',
-                        },
+                        }
                     ]),
             );
         const rolesRow = new Discord.MessageActionRow()
@@ -313,43 +337,51 @@ class MultiroleTrial {
                     .setLabel('Mag DD')
                     .setStyle('PRIMARY')
                     .setEmoji('876758967014010880'),
-                new Discord.MessageButton()
-                    .setCustomId('delete')
-                    .setStyle('PRIMARY')
-                    .setEmoji('🗑'),
             );
 
         const auxDatetime = new Date(this._datetime.getTime());
         const time = auxDatetime.setMinutes(auxDatetime.getMinutes() - 15) - new Date();
         this._message = await interaction.channel.send({ embeds: [participantsEmbed] });
-        const messageReaction = await interaction.reply({ embeds: [infoEmbed], components: [classesRow, rolesRow], fetchReply: true });
+        const messageReaction = await interaction.reply({ embeds: [infoEmbed], components: [optionsRow, classesRow, rolesRow], fetchReply: true });
 
         const collector = messageReaction.createMessageComponentCollector({ time: time });
 
         collector.on('collect', async i => {
             const findResult = this._participants.getParticipant(i.user.id);
             if (i.isSelectMenu()) {
-                const clas = i.values[0];
+                const selectValue = i.values[0];
 
-                if ((clas == "main" || clas == "delete") && findResult != undefined) {
-                    findResult.option = clas;
-                    return await i.reply({ content: 'Option registered', ephemeral: true });
-                } else if ((clas == "main" || clas == "delete") && findResult == undefined) {
+                if (i.customId == "option" && findResult != undefined) {
+                    switch (selectValue) {
+                        case "main":
+                        case "deleteRole":
+                            findResult.option = selectValue;
+                            return await i.reply({ content: 'Option registered. Now select a role', ephemeral: true });
+                        case "portal":
+                            const mainChar = findResult.characters.getMainCharacter();
+                            if (mainChar.role.includes("dd")) {
+                                findResult.portal = true;
+                                this.editEmbed();
+                                return await i.reply({ content: 'Your main role is now portal', ephemeral: true });
+                            }
+                            return await i.reply({ content: "Your current main role can't be portal", ephemeral: true });
+                        case "removeportal":
+                            if (findResult.portal) {
+                                findResult.portal = false;
+                                this.editEmbed();
+                                return await i.reply({ content: 'Portal removed', ephemeral: true });
+                            }
+                            return await i.reply({ content: "Portal isn't set", ephemeral: true });
+                        case "delete":
+                            this.deleteParticipantFinal(findResult);
+                            return await i.reply({ content: 'Removed', ephemeral: true });
+                    }
+                } else if (i.customId == "option" && findResult == undefined) {
                     return await i.reply({ content: 'You are not signed up', ephemeral: true });
                 }
-
-                this._participants.addPartialParticipant(i.user.id, clas);
-                return await i.reply({ content: `${clas.charAt(0).toUpperCase() + clas.slice(1)} selected. Now select a role.`, ephemeral: true });
+                this._participants.addPartialParticipant(i.user.id, selectValue);
+                return await i.reply({ content: `${selectValue.charAt(0).toUpperCase() + selectValue.slice(1)} selected. Now select a role.`, ephemeral: true });
             } else if (i.isButton()) {
-
-                if (i.customId == 'delete') {
-                    if (findResult != undefined) {
-                        this.deleteParticipantFinal(findResult);
-                        return await i.reply({ content: 'Removed', ephemeral: true });
-                    } else {
-                        return await i.reply({ content: 'You are not signed up', ephemeral: true });
-                    }
-                }
 
                 const partialPart = this._participants.getPartialParticipant(i.user.id);
 

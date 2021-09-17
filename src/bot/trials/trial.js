@@ -172,14 +172,17 @@ class Trial {
         for (let index = 0; index < this._participants._counter; index++) {
             const element = this._participants.participants[index];
             if (element.state != "partial") {
-                let fieldName = `${this._client.emojis.cache.find(emoji => emoji.name === `${element.character.role.split(" ")[0]}_${element.character.clas}`)}`;
+                let fieldName = `${this._client.emojis.cache.find(emoji => emoji.name === `${element.character.role.split(" ")[0]}_${element.character.clas}`)}  `;
                 if (!element.character.role.includes("dd")) {
-                    fieldName = `${this._client.emojis.cache.find(emoji => emoji.name === element.character.clas)} ${element.character.role}`;
+                    fieldName = `${this._client.emojis.cache.find(emoji => emoji.name === element.character.clas)} ${element.character.role}  `;
+                }
+                if (element.state == "backup") {
+                    fieldName = fieldName + "(backup)  ";
+                }
+                if (element.portal == true) {
+                    fieldName = fieldName + "(portal)";
                 }
                 let fieldValue = `${this._message.guild.members.cache.find(m => m.id == element.id)}`;
-                if (element.state == "backup") {
-                    fieldValue = `${this._message.guild.members.cache.find(m => m.id == element.id)} (backup)`;
-                }
                 trialEmbed.addField(fieldName, fieldValue, false);
             }
         }
@@ -199,6 +202,26 @@ class Trial {
                 { name: 'Healers', value: `0/2`, inline: true },
                 { name: 'Damage Dealers', value: `0/${this._ddMax}`, inline: true },
             )
+        const optionsRow = new Discord.MessageActionRow()
+            .addComponents(
+                new Discord.MessageSelectMenu()
+                    .setCustomId('option')
+                    .setPlaceholder('Options')
+                    .addOptions([
+                        {
+                            label: 'Set portal dd (if applies)',
+                            value: 'portal',
+                        },
+                        {
+                            label: 'Remove portal',
+                            value: 'removeportal',
+                        },
+                        {
+                            label: 'Delete sign up',
+                            value: 'delete',
+                        },
+                    ]),
+            );
         const classesRow = new Discord.MessageActionRow()
             .addComponents(
                 new Discord.MessageSelectMenu()
@@ -259,36 +282,47 @@ class Trial {
                     .setLabel('Mag DD')
                     .setStyle('PRIMARY')
                     .setEmoji('876758967014010880'),
-                new Discord.MessageButton()
-                    .setCustomId('delete')
-                    .setStyle('PRIMARY')
-                    .setEmoji('🗑'),
             );
 
         const auxDatetime = new Date(this._datetime.getTime());
         const time = auxDatetime.setMinutes(auxDatetime.getMinutes() - 15) - new Date();
         this._message = await interaction.channel.send({ embeds: [participantsEmbed] });
-        const messageReaction = await interaction.reply({ embeds: [infoEmbed], components: [classesRow, rolesRow], fetchReply: true });
+        const messageReaction = await interaction.reply({ embeds: [infoEmbed], components: [optionsRow, classesRow, rolesRow], fetchReply: true });
 
         const collector = messageReaction.createMessageComponentCollector({ time: time });
 
         collector.on('collect', async i => {
+            const findResult = this._participants.getParticipant(i.user.id);
             if (i.isSelectMenu()) {
-                const clas = i.values[0];
-                await i.reply({ content: `${clas.charAt(0).toUpperCase() + clas.slice(1)} selected. Now select a role.`, ephemeral: true });
-                this._participants.addPartialParticipant(i.user.id, i.values[0]);
-            } else if (i.isButton()) {
+                const selectValue = i.values[0];
 
-                const findResult = this._participants.getParticipant(i.user.id);
-                if (i.customId == 'delete') {
-                    if (findResult != undefined) {
-                        this.deleteParticipantFinal(findResult);
-                        return await i.reply({ content: 'Removed', ephemeral: true });
-                    } else {
-                        return await i.reply({ content: 'You are not signed up', ephemeral: true });
+                if (i.customId == "option" && findResult != undefined) {
+                    switch (selectValue) {
+                        case "portal":
+                            if (findResult.character.role.includes("dd")) {
+                                findResult.portal = true;
+                                this.editEmbed();
+                                return await i.reply({ content: 'You are portal now', ephemeral: true });
+                            }
+                            return await i.reply({ content: "Your current role can't be portal", ephemeral: true });
+                        case "removeportal":
+                            if (findResult.portal) {
+                                findResult.portal = false;
+                                this.editEmbed();
+                                return await i.reply({ content: 'Portal removed', ephemeral: true });
+                            }
+                            return await i.reply({ content: "Portal isn't set", ephemeral: true });
+                        case "delete":
+                            this.deleteParticipantFinal(findResult);
+                            return await i.reply({ content: 'Removed', ephemeral: true });
                     }
+                } else if (i.customId == "option" && findResult == undefined) {
+                    return await i.reply({ content: 'You are not signed up', ephemeral: true });
                 }
+                this._participants.addPartialParticipant(i.user.id, selectValue);
+                return await i.reply({ content: `${selectValue.charAt(0).toUpperCase() + selectValue.slice(1)} selected. Now select a role.`, ephemeral: true });
 
+            } else if (i.isButton()) {
                 const partialPart = this._participants.getPartialParticipant(i.user.id);
                 if (partialPart == undefined) {
                     if (findResult == undefined) {
