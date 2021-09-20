@@ -1,22 +1,16 @@
-const http = require('https');
+const fetch = require('node-fetch');
 const Discord = require('discord.js');
 
 module.exports = {
     name: 'servers',
     description: 'Servers',
     async execute(trials, client, interaction) {
-        http.get("https://live-services.elderscrollsonline.com/status/realms", function (res) {
-            let data = '',
-                json_data;
+        fetch('https://live-services.elderscrollsonline.com/status/realms')
+            .then(response => response.json())
+            .then(async (data) => {
+                const serverInfo = data["zos_platform_response"]["response"];
 
-            res.on('data', function (stream) {
-                data += stream;
-            });
-            res.on('end', async function () {
-                json_data = JSON.parse(data);
-                let serverInfo = json_data["zos_platform_response"]["response"];
-
-                let serverEmbed = new Discord.MessageEmbed()
+                const serverEmbed = new Discord.MessageEmbed()
                     .setTitle(`Server status`)
 
                 for (let server in serverInfo) {
@@ -24,7 +18,9 @@ module.exports = {
                 }
 
                 await interaction.reply({ embeds: [serverEmbed] });
-            });
-        });
+            })
+            .catch(async(err) => {
+                await interaction.reply({ content: err, ephemeral: true });
+            })
     }
 }

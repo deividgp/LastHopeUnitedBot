@@ -16,8 +16,8 @@ module.exports = {
                     .setImage(`${data[0]['image']}`)
                 await interaction.reply({ embeds: [quoteEmbed] });
             })
-            .catch(err => {
-                console.log(err);
+            .catch(async(err) => {
+                await interaction.reply({ content: err, ephemeral: true });
             })
     }
 }
