@@ -1,5 +1,7 @@
 const {
-  assignRole
+  assignRole,
+  assignGameRole,
+  twitter,
 } = require('../functions.js');
 const {
   deploy
@@ -10,28 +12,18 @@ module.exports = {
   once: true,
   async execute(client) {
     console.log(`Logged in as ${client.user.tag}!`);
-
-    /*client.channels.fetch('874602861399539724')
-      .then(channel => {
-        channel.bulkDelete(6);s
-        setTimeout(async function () {
-          await assignRole(channel, "877111337690472448");
-        }, 4000);
-      })
-      .catch(console.error);*/
     client.channels.fetch('811207960701042713')
-      .then(channel => {
-        channel.bulkDelete(6);
-        setTimeout(async function () {
-          await assignRole(channel, "811207960671813646");
-        }, 4000);
-        setTimeout(async function () {
-          await assignRole(channel, "811207960691867663");
-        }, 4000);
-
+      .then(async (channel) => {
+        await assignRole(channel, "890275137662894090");
+        await assignRole(channel, "890275250976227329");
+        await assignGameRole(channel, "890275204696277045");
       })
-      .catch(console.error);
 
     deploy(client);
+
+    client.channels.fetch('811948277461024838')
+      .then(channel => {
+        twitter(channel);
+      })
   }
 }
