@@ -19,8 +19,8 @@ module.exports = {
 
                 await interaction.reply({ embeds: [serverEmbed] });
             })
-            .catch(async(err) => {
-                await interaction.reply({ content: err, ephemeral: true });
+            .catch(async () => {
+                await interaction.reply({ content: "Error", ephemeral: true });
             })
     }
 }
