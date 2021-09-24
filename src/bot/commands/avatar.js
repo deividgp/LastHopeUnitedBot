@@ -4,6 +4,6 @@ module.exports = {
     name: 'avatar',
     type: 2,
     async execute(trials, client, interaction) {
-        return await interaction.reply(`${interaction.options.getUser("user").displayAvatarURL({ dynamic: true })}`);
+        return await interaction.reply(`${interaction.options.getUser("user").displayAvatarURL({ dynamic: true, size: 2048 })}`);
     }
 }

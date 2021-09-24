@@ -189,7 +189,7 @@ class MultiroleTrial {
         let msgBlock = "";
         for (let index = 0; index < this._participants._counter; index++) {
             const element = this._participants.participants[index];
-            const mainChar = participant.characters.getMainCharacter();
+            const mainChar = element.characters.getMainCharacter();
             if (element.state != "partial") {
                 msgBlock = msgBlock + `${this._message.guild.members.cache.find(m => m.id == element.id)} is **${element.state}** as ${mainChar.clas} ${mainChar.role}\n`;
             }
@@ -400,7 +400,7 @@ class MultiroleTrial {
                                     case false:
                                         return await i.reply({ content: 'Added as backup', ephemeral: true });
                                 }
-                            case "delete":
+                            case "deleteRole":
                                 const deleteChar = this.deleteChar(findResult, i.customId);
                                 switch (deleteChar) {
                                     case undefined:

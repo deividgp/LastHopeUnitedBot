@@ -66,7 +66,6 @@ const assignGameRole = async (channel, msgID) => {
             const collector = message.createReactionCollector({ filter });
 
             collector.on('collect', (reaction, user) => {
-                console.log("hi");
                 const member = channel.guild.members.cache.find(u => u.id == user.id);
                 switch (reaction.emoji.id) {
                     case '876758966720405535':
@@ -85,25 +84,27 @@ const assignGameRole = async (channel, msgID) => {
 }
 
 const twitter = (channel) => {
+    const T = new Twit({
+        consumer_key: `${process.env.TWITTER_CONSUMER_KEY}`,
+        consumer_secret: `${process.env.TWITTER_CONSUMER_SECRET}`,
+        access_token: `${process.env.TWITTER_ACCESS_TOKEN}`,
+        access_token_secret: `${process.env.TWITTER_ACCESS_TOKEN_SECRET}`,
+    });
+    const tweetKeywords = ["ESO", "European megaservers", "European PC"];
+    const stream = T.stream('statuses/filter', { follow: '718475378751381504' });
     try {
-        const T = new Twit({
-            consumer_key: `${process.env.TWITTER_CONSUMER_KEY}`,
-            consumer_secret: `${process.env.TWITTER_CONSUMER_SECRET}`,
-            access_token: `${process.env.TWITTER_ACCESS_TOKEN}`,
-            access_token_secret: `${process.env.TWITTER_ACCESS_TOKEN_SECRET}`,
-        });
-        const tweetKeywords = ["ESO", "European megaservers", "European PC"];
-
-        const stream = T.stream('statuses/filter', { follow: '718475378751381504' });
-
         stream.on('tweet', function (tweet) {
-            let content = tweet.text;
-            if (tweetKeywords.some(keyword => content.includes(keyword)) && !isReply(tweet)) {
+            
+            if (tweetKeywords.some(keyword => tweet.text.includes(keyword)) && !isReply(tweet)) {
                 channel.send(tweet.text);
             }
         });
-    } catch(error) {
-        console.error(error);
+
+        stream.on('error', function (error) {
+            console.log(error.message);
+        });
+    } catch (error) {
+        console.log(error);
     }
 }
 
