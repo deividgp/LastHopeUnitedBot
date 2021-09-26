@@ -177,7 +177,7 @@ class MultiroleTrial {
                 const element = this._participants.participants[index];
                 if (element.state == "backup") {
                     const mainChar = element.characters.getMainCharacter();
-                    if (mainChar.role == role && element.state == "backup") {
+                    if (mainChar.role == role) {
                         element.state = "in";
                         return;
                     }
