@@ -12,6 +12,7 @@ module.exports = {
         required: true,
     }],
     async execute(trials, client, interaction) {
+        await interaction.deferReply();
         try {
             search.json({
                 api_key: process.env.SERPAPI_KEY,
@@ -20,10 +21,10 @@ module.exports = {
             }, async (data) => {
                 const imageResults = data["images_results"];
                 const position = Math.floor(Math.random() * imageResults.length);
-                await interaction.reply(imageResults[position]["original"]);
+                await interaction.editReply(imageResults[position]["original"]);
             })
         } catch {
-            await interaction.reply({ content: `Error`, ephemeral: true });
+            await interaction.editReply("API error");
         }
     }
 }

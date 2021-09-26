@@ -5,6 +5,7 @@ module.exports = {
     name: 'servers',
     description: 'Servers',
     async execute(trials, client, interaction) {
+        await interaction.deferReply();
         fetch('https://live-services.elderscrollsonline.com/status/realms')
             .then(response => response.json())
             .then(async (data) => {
@@ -16,11 +17,10 @@ module.exports = {
                 for (let server in serverInfo) {
                     serverEmbed.addField(`${server.substring(26, server.length - 1)}`, `${serverInfo[server]}`, true)
                 }
-
-                await interaction.reply({ embeds: [serverEmbed] });
+                await interaction.editReply({ embeds: [serverEmbed] });
             })
             .catch(async () => {
-                await interaction.reply({ content: "Error", ephemeral: true });
+                await interaction.editReply("API error");
             })
     }
 }

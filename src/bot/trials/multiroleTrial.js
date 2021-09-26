@@ -175,10 +175,12 @@ class MultiroleTrial {
         if (verify) {
             for (let index = 0; index < this._participants._counter; index++) {
                 const element = this._participants.participants[index];
-                const mainChar = this._participants.participants[index].characters.getMainCharacter();
-                if (mainChar.role == role && element.state == "backup") {
-                    element.state = "in";
-                    return;
+                if (element.state == "backup") {
+                    const mainChar = element.characters.getMainCharacter();
+                    if (mainChar.role == role && element.state == "backup") {
+                        element.state = "in";
+                        return;
+                    }
                 }
             }
         }

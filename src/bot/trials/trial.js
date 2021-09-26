@@ -144,10 +144,14 @@ class Trial {
         if (verify) {
             for (let index = 0; index < this._participants._counter; index++) {
                 const element = this._participants.participants[index];
-                if (element.character.role == role && element.state == "backup") {
-                    element.state = "in";
-                    return;
+                if (element.state == "backup") {
+                    const character = element.character;
+                    if (character.role == role) {
+                        element.state = "in";
+                        return;
+                    }
                 }
+
             }
         }
         this.subtractRole(role);
