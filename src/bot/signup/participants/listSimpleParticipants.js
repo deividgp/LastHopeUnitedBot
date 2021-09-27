@@ -1,4 +1,4 @@
-const Participant = require('./participant.js');
+const SimpleParticipant = require('./simpleParticipant.js');
 
 class ListParticipants {
   constructor() {
@@ -21,14 +21,14 @@ class ListParticipants {
   addPartialParticipant(id, clas) {
     const participant = this.getParticipant(id);
     if (participant == undefined) {
-      this._participants[this._counter] = new Participant(id, clas);
+      this._participants[this._counter] = new SimpleParticipant(id, clas);
       this._counter++;
     } else {
       participant.newClass = clas;
     }
   }
 
-  updateParticipant(participant, role, state, update = false) {
+  updateParticipant(participant, role, state) {
     participant.state = state;
     participant.character.role = role;
     participant.character.clas = participant.newClass;

@@ -1,108 +1,26 @@
 const Discord = require('discord.js');
+const Trial = require('./trial.js');
 const ListMultiroleParticipants = require('../participants/listMultiroleParticipants.js');
 
-class MultiroleTrial {
+class MultiroleTrial extends Trial {
 
     constructor(id, trial, tanks, datetime, description, interaction, client) {
-        this._id = id;
-        this._name = trial;
-        this._hMax = 2;
-        this._tMax = tanks;
-        this._ddMax = 12 - (this._tMax + this._hMax);
-        this._hCounter = 0;
-        this._tCounter = 0;
-        this._ddCounter = 0;
-        this._datetime = datetime;
-        this._description = description;
-        this._message = undefined;
+        super(id, trial, tanks, datetime, description, client);
         this._participants = new ListMultiroleParticipants();
-        this._client = client;
         this.startTrial(interaction);
-    }
-
-    get id() {
-        return this._id;
-    }
-
-    get name() {
-        return this._name;
-    }
-
-    get hMax() {
-        return this._hMax;
-    }
-
-    get tMax() {
-        return this._tMax;
-    }
-
-    get ddMax() {
-        return this._ddMax;
-    }
-
-    get hCounter() {
-        return this._hCounter;
-    }
-
-    get tCounter() {
-        return this._tCounter;
-    }
-
-    get ddCounter() {
-        return this._ddCounter;
-    }
-
-    get datetime() {
-        return this._datetime;
     }
 
     get participants() {
         return this._participants;
     }
 
-    get counter() {
-        return this._counter;
-    }
-
-    addRole(role) {
-        switch (role) {
-            case 'tank':
-                this._tCounter++;
-                return (this._tCounter <= this._tMax);
-            case 'healer':
-                this._hCounter++;
-                return (this._hCounter <= this._hMax);
-            case 'stamina dd':
-            case 'magicka dd':
-                this._ddCounter++;
-                return (this._ddCounter <= this._ddMax);
-        }
-
-        return false;
-    }
-
-    subtractRole(role) {
-        switch (role) {
-            case 'tank':
-                this._tCounter--;
-                break;
-            case 'healer':
-                this._hCounter--;
-                break;
-            case 'stamina dd':
-            case 'magicka dd':
-                this._ddCounter--;
-                break;
-        }
-    }
-
     addParticipantFinal(participant, role) {
-        const verify = this.addRole(role);
+        const verify = super.addRole(role);
 
         if (verify) {
             this._participants.addParticipant(participant, role);
         } else {
-            this.subtractRole(role);
+            super.subtractRole(role);
             this._participants.addParticipant(participant, role, "backup");
         }
         this.editEmbed();
@@ -114,7 +32,7 @@ class MultiroleTrial {
         const state = participant.state;
         this._participants.deleteParticipant(participant);
         if (state == "in") {
-            this.subtractRole(mainChar.role);
+            super.subtractRole(mainChar.role);
         }
         this.updateBackupParticipant(mainChar.role);
         this.editEmbed();
@@ -130,13 +48,13 @@ class MultiroleTrial {
         participant.portal = false;
 
         if (participant.state == "in") {
-            this.subtractRole(oldMainChar.role);
+            super.subtractRole(oldMainChar.role);
         }
-        const verify = this.addRole(role);
+        const verify = super.addRole(role);
         if (verify) {
             this._participants.updateCharMain(participant, role, "in");
         } else {
-            this.subtractRole(role);
+            super.subtractRole(role);
             this._participants.updateCharMain(participant, role, "backup");
         }
         this.updateBackupParticipant(oldMainChar.role);
@@ -171,7 +89,7 @@ class MultiroleTrial {
     }
 
     updateBackupParticipant(role) {
-        const verify = this.addRole(role);
+        const verify = super.addRole(role);
         if (verify) {
             for (let index = 0; index < this._participants._counter; index++) {
                 const element = this._participants.participants[index];
@@ -184,16 +102,16 @@ class MultiroleTrial {
                 }
             }
         }
-        this.subtractRole(role);
+        super.subtractRole(role);
     }
 
     async listParticipants(channel) {
         let msgBlock = "";
         for (let index = 0; index < this._participants._counter; index++) {
             const element = this._participants.participants[index];
-            const mainChar = element.characters.getMainCharacter();
             if (element.state != "partial") {
-                msgBlock = msgBlock + `${this._message.guild.members.cache.find(m => m.id == element.id)} is **${element.state}** as ${mainChar.clas} ${mainChar.role}\n`;
+                const mainChar = element.characters.getMainCharacter();
+                msgBlock = msgBlock + `${super.message.guild.members.cache.find(m => m.id == element.id)} is **${element.state}** as ${mainChar.clas} ${mainChar.role}\n`;
             }
         }
         channel.send(msgBlock);
@@ -201,18 +119,18 @@ class MultiroleTrial {
 
     async editEmbed() {
         let trialEmbed = new Discord.MessageEmbed()
-        trialEmbed.addField('Tanks', `${this._tCounter}/${this._tMax}`, true);
-        trialEmbed.addField('Healers', `${this._hCounter}/${this._hMax}`, true);
-        trialEmbed.addField('Damage Dealers', `${this._ddCounter}/${this._ddMax}`, true);
+        trialEmbed.addField('Tanks', `${super.tCounter}/${super.tMax}`, true);
+        trialEmbed.addField('Healers', `${super.hCounter}/${super.hMax}`, true);
+        trialEmbed.addField('Damage Dealers', `${super.ddCounter}/${super.ddMax}`, true);
         for (let index = 0; index < this._participants._counter; index++) {
             const participant = this._participants.participants[index];
             if (participant.state != "partial") {
                 let fieldName = "";
                 const mainChar = participant.characters.getMainCharacter();
                 if (!mainChar.role.includes("dd")) {
-                    fieldName = fieldName + `${this._client.emojis.cache.find(emoji => emoji.name === mainChar.clas)} ${mainChar.role}  `;
+                    fieldName = fieldName + `${super.client.emojis.cache.find(emoji => emoji.name === mainChar.clas)} ${mainChar.role}  `;
                 } else {
-                    fieldName = fieldName + `${this._client.emojis.cache.find(emoji => emoji.name === `${mainChar.role.split(" ")[0]}_${mainChar.clas}`)}  `;
+                    fieldName = fieldName + `${super.client.emojis.cache.find(emoji => emoji.name === `${mainChar.role.split(" ")[0]}_${mainChar.clas}`)}  `;
                 }
                 if (participant.state == "backup") {
                     fieldName = fieldName + "(backup)  "
@@ -224,32 +142,32 @@ class MultiroleTrial {
 
                     if (character.clas != undefined && character.main == false) {
                         if (!character.role.includes("dd")) {
-                            fieldName = fieldName + `${this._client.emojis.cache.find(emoji => emoji.name === character.clas)} ${character.role}  `;
+                            fieldName = fieldName + `${super.client.emojis.cache.find(emoji => emoji.name === character.clas)} ${character.role}  `;
                         } else {
-                            fieldName = fieldName + `${this._client.emojis.cache.find(emoji => emoji.name === `${character.role.split(" ")[0]}_${character.clas}`)}  `;
+                            fieldName = fieldName + `${super.client.emojis.cache.find(emoji => emoji.name === `${character.role.split(" ")[0]}_${character.clas}`)}  `;
                         }
                     }
                 }
-                const fieldValue = `${this._message.guild.members.cache.find(m => m.id == participant.id)}`;
+                const fieldValue = `${super.message.guild.members.cache.find(m => m.id == participant.id)}`;
                 trialEmbed.addField(fieldName, fieldValue, false);
                 fieldName = "";
             }
         }
-        await this._message.edit({ embeds: [trialEmbed] });
+        await super.message.edit({ embeds: [trialEmbed] });
     }
 
     async startTrial(interaction) {
         const infoEmbed = new Discord.MessageEmbed()
-            .setTitle(`Trial nº ${this._id + 1}: ${this._name}`)
-            .addField('Date and time', `<t:${this._datetime.getTime() / 1000}>`, false)
-        if (this._description != undefined) {
-            infoEmbed.setDescription(this._description);
+            .setTitle(`Trial nº ${super.id + 1}: ${super.name}`)
+            .addField('Date and time', `<t:${super.datetime.getTime() / 1000}>`, false)
+        if (super.description != undefined) {
+            infoEmbed.setDescription(super.description);
         }
         const participantsEmbed = new Discord.MessageEmbed()
             .addFields(
-                { name: 'Tanks', value: `0/${this._tMax}`, inline: true },
+                { name: 'Tanks', value: `0/${super.tMax}`, inline: true },
                 { name: 'Healers', value: `0/2`, inline: true },
-                { name: 'Damage Dealers', value: `0/${this._ddMax}`, inline: true },
+                { name: 'Damage Dealers', value: `0/${super.ddMax}`, inline: true },
             )
         const optionsRow = new Discord.MessageActionRow()
             .addComponents(
@@ -341,9 +259,9 @@ class MultiroleTrial {
                     .setEmoji('876758967014010880'),
             );
 
-        const auxDatetime = new Date(this._datetime.getTime());
+        const auxDatetime = new Date(super.datetime.getTime());
         const time = auxDatetime.setMinutes(auxDatetime.getMinutes() - 15) - new Date();
-        this._message = await interaction.channel.send({ embeds: [participantsEmbed] });
+        super.message = await interaction.channel.send({ embeds: [participantsEmbed] });
         const messageReaction = await interaction.reply({ embeds: [infoEmbed], components: [optionsRow, classesRow, rolesRow], fetchReply: true });
 
         const collector = messageReaction.createMessageComponentCollector({ time: time });
@@ -418,7 +336,6 @@ class MultiroleTrial {
                                     return await i.reply({ content: "Role updated succesfully", ephemeral: true });
                                 }
                                 return await i.reply({ content: "Need to select an option first", ephemeral: true });
-
                         }
                     }
                 } else {
@@ -432,7 +349,7 @@ class MultiroleTrial {
         });
 
         collector.on('end', () => {
-            this.listParticipants(this._message.channel);
+            this.listParticipants(super.message.channel);
         });
     }
 }

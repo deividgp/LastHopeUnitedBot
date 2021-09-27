@@ -1,4 +1,4 @@
-const Trial = require('./trial.js');
+const SimpleTrial = require('./simpleTrial.js');
 const MultiroleTrial = require('./multiroleTrial.js');
 
 class ListTrials {
@@ -19,7 +19,7 @@ class ListTrials {
     if (multirole) {
       this._trials[this._counter] = new MultiroleTrial(this._counter, trial, tanks, datetime, description, interaction, client);
     } else {
-      this._trials[this._counter] = new Trial(this._counter, trial, tanks, datetime, description, interaction, client);
+      this._trials[this._counter] = new SimpleTrial(this._counter, trial, tanks, datetime, description, interaction, client);
     }
 
     this._counter++;
