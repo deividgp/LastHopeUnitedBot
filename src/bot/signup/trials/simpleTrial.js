@@ -216,10 +216,11 @@ class SimpleTrial extends Trial {
 
         collector.on('collect', async i => {
             const findResult = this._participants.getParticipant(i.user.id);
+            const partialPart = this._participants.getPartialParticipant(i.user.id);
             if (i.isSelectMenu()) {
                 const selectValue = i.values[0];
 
-                if (i.customId == "option" && findResult != undefined) {
+                if (i.customId == "option" && findResult != undefined && partialPart == undefined) {
                     switch (selectValue) {
                         case "portal":
                             if (findResult.character.role.includes("dd")) {
@@ -239,14 +240,14 @@ class SimpleTrial extends Trial {
                             this.deleteParticipantFinal(findResult);
                             return await i.reply({ content: 'Removed', ephemeral: true });
                     }
-                } else if (i.customId == "option" && findResult == undefined) {
+                } else if (i.customId == "option" && (findResult == undefined || partialPart != undefined)) {
                     return await i.reply({ content: 'You are not signed up', ephemeral: true });
                 }
                 this._participants.addPartialParticipant(i.user.id, selectValue);
                 return await i.reply({ content: `${selectValue.charAt(0).toUpperCase() + selectValue.slice(1)} selected. Now select a role.`, ephemeral: true });
 
             } else if (i.isButton()) {
-                const partialPart = this._participants.getPartialParticipant(i.user.id);
+
                 if (partialPart == undefined) {
                     if (findResult == undefined) {
                         return await i.reply({ content: 'Select a class first', ephemeral: true });
