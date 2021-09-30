@@ -215,56 +215,61 @@ class SimpleTrial extends Trial {
         const collector = messageReaction.createMessageComponentCollector({ time: time });
 
         collector.on('collect', async i => {
-            const findResult = this._participants.getParticipant(i.user.id);
-            const partialPart = this._participants.getPartialParticipant(i.user.id);
-            if (i.isSelectMenu()) {
-                const selectValue = i.values[0];
+            try {
+                await i.deferReply({ ephemeral: true });
+                const findResult = this._participants.getParticipant(i.user.id);
+                const partialPart = this._participants.getPartialParticipant(i.user.id);
+                if (i.isSelectMenu()) {
+                    const selectValue = i.values[0];
 
-                if (i.customId == "option" && findResult != undefined && partialPart == undefined) {
-                    switch (selectValue) {
-                        case "portal":
-                            if (findResult.character.role.includes("dd")) {
-                                findResult.portal = true;
-                                this.editEmbed();
-                                return await i.reply({ content: 'You are portal now', ephemeral: true });
-                            }
-                            return await i.reply({ content: "Your current role can't be portal", ephemeral: true });
-                        case "removeportal":
-                            if (findResult.portal) {
-                                findResult.portal = false;
-                                this.editEmbed();
-                                return await i.reply({ content: 'Portal removed', ephemeral: true });
-                            }
-                            return await i.reply({ content: "Portal isn't set", ephemeral: true });
-                        case "delete":
-                            this.deleteParticipantFinal(findResult);
-                            return await i.reply({ content: 'Removed', ephemeral: true });
-                    }
-                } else if (i.customId == "option" && (findResult == undefined || partialPart != undefined)) {
-                    return await i.reply({ content: 'You are not signed up', ephemeral: true });
-                }
-                this._participants.addPartialParticipant(i.user.id, selectValue);
-                return await i.reply({ content: `${selectValue.charAt(0).toUpperCase() + selectValue.slice(1)} selected. Now select a role.`, ephemeral: true });
-
-            } else if (i.isButton()) {
-
-                if (partialPart == undefined) {
-                    if (findResult == undefined) {
-                        return await i.reply({ content: 'Select a class first', ephemeral: true });
-                    } else {
-                        const update = this.updateParticipantFinal(findResult, i.customId);
-                        if (update) {
-                            return await i.reply({ content: 'Role updated succesfully', ephemeral: true });
+                    if (i.customId == "option" && findResult != undefined && partialPart == undefined) {
+                        switch (selectValue) {
+                            case "portal":
+                                if (findResult.character.role.includes("dd")) {
+                                    findResult.portal = true;
+                                    this.editEmbed();
+                                    return await i.editReply('You are portal now');
+                                }
+                                return await i.editReply("Your current role can't be portal");
+                            case "removeportal":
+                                if (findResult.portal) {
+                                    findResult.portal = false;
+                                    this.editEmbed();
+                                    return await i.editReply('Portal removed');
+                                }
+                                return await i.editReply("Portal isn't set");
+                            case "delete":
+                                this.deleteParticipantFinal(findResult);
+                                return await i.editReply('Removed');
                         }
-                        return await i.reply({ content: 'Added as backup', ephemeral: true });
+                    } else if (i.customId == "option" && (findResult == undefined || partialPart != undefined)) {
+                        return await i.editReply('You are not signed up');
                     }
-                } else {
-                    const add = this.addParticipantFinal(findResult, i.customId);
-                    if (add) {
-                        return await i.reply({ content: 'Added', ephemeral: true });
+                    this._participants.addPartialParticipant(i.user.id, selectValue);
+                    return await i.editReply(`${selectValue.charAt(0).toUpperCase() + selectValue.slice(1)} selected. Now select a role.`);
+
+                } else if (i.isButton()) {
+
+                    if (partialPart == undefined) {
+                        if (findResult == undefined) {
+                            return await i.editReply('Select a class first');
+                        } else {
+                            const update = this.updateParticipantFinal(findResult, i.customId);
+                            if (update) {
+                                return await i.editReply('Role updated succesfully');
+                            }
+                            return await i.editReply('Added as backup');
+                        }
+                    } else {
+                        const add = this.addParticipantFinal(findResult, i.customId);
+                        if (add) {
+                            return await i.editReply('Added');
+                        }
+                        await i.editReply('Added as backup');
                     }
-                    await i.reply({ content: 'Added as backup', ephemeral: true });
                 }
+            } catch (error) {
+                console.error(error);
             }
         });
 
