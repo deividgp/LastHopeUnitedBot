@@ -1,6 +1,6 @@
 const { ApplicationCommandOptionType } = require('discord-api-types/v9');
-const SerpApi = require('google-search-results-nodejs')
-const search = new SerpApi.GoogleSearch("Your Private Key")
+const SerpApi = require('google-search-results-nodejs');
+const search = new SerpApi.GoogleSearch(process.env.SERPAPI_KEY);
 
 module.exports = {
     name: 'image',
