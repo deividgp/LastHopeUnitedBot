@@ -65,6 +65,14 @@ class Trial {
         this._message = message;
     }
 
+    get description() {
+        return this._description;
+    }
+
+    set description(description) {
+        this._description = description;
+    }
+
     addRole(role) {
         switch (role) {
             case 'tank':
