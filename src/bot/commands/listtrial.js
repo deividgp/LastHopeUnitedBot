@@ -10,9 +10,6 @@ module.exports = {
         required: true,
     }],
     async execute(trials, client, interaction) {
-        if (!interaction.member.permissions.has("ADMINISTRATOR"))
-            return await interaction.reply(`Not enough permissions`);
-
         const trialID = interaction.options.getInteger('trialid');
 
         if (trialID == 0 || (trialID - 1) > trials._counter)

@@ -84,7 +84,9 @@ class SimpleTrial extends Trial {
                 msgBlock = msgBlock + `${super.message.guild.members.cache.find(m => m.id == element.id)} is **${element.state}** as ${character.clas} ${character.role}\n`;
             }
         }
-        channel.send(msgBlock);
+        if(msgBlock.length > 0){
+            channel.send(msgBlock);
+        }
     }
 
     async editEmbed() {
@@ -114,7 +116,8 @@ class SimpleTrial extends Trial {
 
     async startTrial(interaction) {
         const infoEmbed = new Discord.MessageEmbed()
-            .setTitle(`Trial nº ${super.id + 1}: ${super.name}`)
+            .setTitle(`${super.name}`)
+            .addField(`ID`, `${super.id + 1}`)
             .addField('Date and time', `<t:${super.datetime.getTime() / 1000}>`, false)
         if (super.description != undefined) {
             infoEmbed.setDescription(super.description);
