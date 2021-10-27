@@ -39,6 +39,12 @@ module.exports = {
         type: ApplicationCommandOptionType.String,
         description: 'Trial description',
         required: false,
+    },
+    {
+        name: 'raidleader',
+        type: ApplicationCommandOptionType.User,
+        description: 'Raidlead (leave it if you are the raidlead)',
+        required: false,
     }],
     async execute(trials, client, interaction) {
         const options = interaction.options;
@@ -48,10 +54,11 @@ module.exports = {
         const time = options.getString('time');
         const multirole = options.getBoolean('multirole');
         const description = options.getString('description');
+        const raidleader = options.getUser('raidleader');
         const datetime = moment(`${date} ${time}`, "DD/MM/YYYY HH:mm").toDate();
 
         if (tanks >= 1 && date.length == 10 && time.length == 5 && new Date() < datetime)
-            return trials.addTrial(trial, tanks, datetime, multirole, description, interaction, client);
+            return trials.addTrial(trial, tanks, datetime, multirole, description, interaction, raidleader, client);
 
         return await interaction.reply({ content: `Couldn't create trial`, ephemeral: true });
     }

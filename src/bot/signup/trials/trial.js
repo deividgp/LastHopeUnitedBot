@@ -2,7 +2,7 @@ const Discord = require('discord.js');
 
 class Trial {
 
-    constructor(id, trial, tanks, datetime, description, client) {
+    constructor(id, trial, tanks, datetime, description, raidleader, client) {
         this._id = id;
         this._name = trial;
         this._hMax = 2;
@@ -13,8 +13,86 @@ class Trial {
         this._ddCounter = 0;
         this._datetime = datetime;
         this._description = description;
+        this._raidleader = raidleader;
         this._message = undefined;
         this._client = client;
+        this._participantsEmbed = new Discord.MessageEmbed()
+            .addFields(
+                { name: 'Tanks', value: `0/${super.tMax}`, inline: true },
+                { name: 'Healers', value: `0/2`, inline: true },
+                { name: 'Damage Dealers', value: `0/${super.ddMax}`, inline: true },
+            )
+        this._infoEmbed = new Discord.MessageEmbed()
+            .setTitle(`${this._name}`)
+            .addField(`ID`, `${this._id + 1}`)
+            .addField('Date and time', `<t:${this._datetime.getTime() / 1000}>`, false)
+        if (this._raidleader != undefined) {
+            this._infoEmbed.addField('Raidleader', `${this._raidleader}`);
+        }
+        if (this._description != undefined) {
+            this._infoEmbed.setDescription(this._description);
+        }
+        this._classesRow = new Discord.MessageActionRow()
+            .addComponents(
+                new Discord.MessageSelectMenu()
+                    .setCustomId('class')
+                    .setPlaceholder('Classes')
+                    .addOptions([
+                        {
+                            label: 'Dragonknight',
+                            value: 'dragonknight',
+                            emoji: '876758966653296661',
+                        },
+                        {
+                            label: 'Sorcerer',
+                            value: 'sorcerer',
+                            emoji: '876758967047557140',
+                        },
+                        {
+                            label: 'Nightblade',
+                            value: 'nightblade',
+                            emoji: '876758967039197224',
+                        },
+                        {
+                            label: 'Templar',
+                            value: 'templar',
+                            emoji: '876758967005626408',
+                        },
+                        {
+                            label: 'Warden',
+                            value: 'warden',
+                            emoji: '876758967068524544',
+                        },
+                        {
+                            label: 'Necromancer',
+                            value: 'necromancer',
+                            emoji: '876758967005622302',
+                        }
+                    ]),
+            );
+        this._rolesRow = new Discord.MessageActionRow()
+            .addComponents(
+                new Discord.MessageButton()
+                    .setCustomId('tank')
+                    .setLabel('Tank')
+                    .setStyle('PRIMARY')
+                    .setEmoji('876758966720405535'),
+                new Discord.MessageButton()
+                    .setCustomId('healer')
+                    .setLabel('Healer')
+                    .setStyle('PRIMARY')
+                    .setEmoji('876758967018197032'),
+                new Discord.MessageButton()
+                    .setCustomId('stamina dd')
+                    .setLabel('Stam DD')
+                    .setStyle('PRIMARY')
+                    .setEmoji('876758967014010880'),
+                new Discord.MessageButton()
+                    .setCustomId('magicka dd')
+                    .setLabel('Mag DD')
+                    .setStyle('PRIMARY')
+                    .setEmoji('876758967014010880'),
+            );
     }
 
     get id() {
@@ -71,6 +149,30 @@ class Trial {
 
     set description(description) {
         this._description = description;
+    }
+
+    get raidleader() {
+        return this._raidleader;
+    }
+
+    set raidleader(raidleader) {
+        this._raidleader = raidleader;
+    }
+
+    get infoEmbed() {
+        return this._infoEmbed;
+    }
+
+    get rolesRow() {
+        return this._rolesRow;
+    }
+
+    get classesRow() {
+        return this._classesRow;
+    }
+
+    get participantsEmbed() {
+        return this._participantsEmbed;
     }
 
     addRole(role) {

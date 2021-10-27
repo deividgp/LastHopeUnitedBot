@@ -12,7 +12,7 @@ const deploy = async (client) => {
 
         if (process.env.MODE == "development") {
             await rest.put(
-                Routes.applicationGuildCommands(client_id, '658351074821931042'),
+                Routes.applicationGuildCommands(client_id, '874602860699082774'),
                 { body: commands },
             );
         } else {

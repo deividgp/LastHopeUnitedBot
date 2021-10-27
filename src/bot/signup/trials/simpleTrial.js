@@ -4,8 +4,8 @@ const Discord = require('discord.js');
 
 class SimpleTrial extends Trial {
 
-    constructor(id, trial, tanks, datetime, description, interaction, client) {
-        super(id, trial, tanks, datetime, description, client);
+    constructor(id, trial, tanks, datetime, description, interaction, raidleader, client) {
+        super(id, trial, tanks, datetime, description, raidleader, client);
         this._participants = new ListSimpleParticipants();
         this.startTrial(interaction);
     }
@@ -115,19 +115,6 @@ class SimpleTrial extends Trial {
     }
 
     async startTrial(interaction) {
-        const infoEmbed = new Discord.MessageEmbed()
-            .setTitle(`${super.name}`)
-            .addField(`ID`, `${super.id + 1}`)
-            .addField('Date and time', `<t:${super.datetime.getTime() / 1000}>`, false)
-        if (super.description != undefined) {
-            infoEmbed.setDescription(super.description);
-        }
-        const participantsEmbed = new Discord.MessageEmbed()
-            .addFields(
-                { name: 'Tanks', value: `0/${super.tMax}`, inline: true },
-                { name: 'Healers', value: `0/2`, inline: true },
-                { name: 'Damage Dealers', value: `0/${super.ddMax}`, inline: true },
-            )
         const optionsRow = new Discord.MessageActionRow()
             .addComponents(
                 new Discord.MessageSelectMenu()
@@ -148,72 +135,11 @@ class SimpleTrial extends Trial {
                         },
                     ]),
             );
-        const classesRow = new Discord.MessageActionRow()
-            .addComponents(
-                new Discord.MessageSelectMenu()
-                    .setCustomId('class')
-                    .setPlaceholder('Class')
-                    .addOptions([
-                        {
-                            label: 'Dragonknight',
-                            value: 'dragonknight',
-                            emoji: '876758966653296661',
-                        },
-                        {
-                            label: 'Sorcerer',
-                            value: 'sorcerer',
-                            emoji: '876758967047557140',
-                        },
-                        {
-                            label: 'Nightblade',
-                            value: 'nightblade',
-                            emoji: '876758967039197224',
-                        },
-                        {
-                            label: 'Templar',
-                            value: 'templar',
-                            emoji: '876758967005626408',
-                        },
-                        {
-                            label: 'Warden',
-                            value: 'warden',
-                            emoji: '876758967068524544',
-                        },
-                        {
-                            label: 'Necromancer',
-                            value: 'necromancer',
-                            emoji: '876758967005622302',
-                        },
-                    ]),
-            );
-        const rolesRow = new Discord.MessageActionRow()
-            .addComponents(
-                new Discord.MessageButton()
-                    .setCustomId('tank')
-                    .setLabel('Tank')
-                    .setStyle('PRIMARY')
-                    .setEmoji('876758966720405535'),
-                new Discord.MessageButton()
-                    .setCustomId('healer')
-                    .setLabel('Healer')
-                    .setStyle('PRIMARY')
-                    .setEmoji('876758967018197032'),
-                new Discord.MessageButton()
-                    .setCustomId('stamina dd')
-                    .setLabel('Stam DD')
-                    .setStyle('PRIMARY')
-                    .setEmoji('876758967014010880'),
-                new Discord.MessageButton()
-                    .setCustomId('magicka dd')
-                    .setLabel('Mag DD')
-                    .setStyle('PRIMARY')
-                    .setEmoji('876758967014010880'),
-            );
 
         const auxDatetime = new Date(super.datetime.getTime());
         const time = auxDatetime.setMinutes(auxDatetime.getMinutes() - 15) - new Date();
-        super.message = await interaction.channel.send({ embeds: [participantsEmbed] });
-        const messageReaction = await interaction.reply({ embeds: [infoEmbed], components: [optionsRow, classesRow, rolesRow], fetchReply: true });
+        super.message = await interaction.channel.send({ embeds: [super.participantsEmbed] });
+        const messageReaction = await interaction.reply({ embeds: [super.infoEmbed], components: [optionsRow, super.classesRow, super.rolesRow], fetchReply: true });
 
         const collector = messageReaction.createMessageComponentCollector({ time: time });
 
