@@ -4,8 +4,8 @@ const ListMultiroleParticipants = require('../participants/listMultiroleParticip
 
 class MultiroleTrial extends Trial {
 
-    constructor(id, trial, tanks, datetime, description, interaction, raidleader, client) {
-        super(id, trial, tanks, datetime, description, raidleader, client);
+    constructor(id, trial, tanks, datetime, role, description, interaction, raidleader, client) {
+        super(id, trial, tanks, datetime, role, description, raidleader, interaction, client);
         this._participants = new ListMultiroleParticipants();
         this.startTrial(interaction);
     }
@@ -190,8 +190,8 @@ class MultiroleTrial extends Trial {
 
         const auxDatetime = new Date(super.datetime.getTime());
         const time = auxDatetime.setMinutes(auxDatetime.getMinutes() - 15) - new Date();
-        super.message = await interaction.channel.send({ embeds: [super.participantsEmbed] });
-        const messageReaction = await interaction.reply({ embeds: [super.infoEmbed], components: [optionsRow, super.classesRow, super.rolesRow], fetchReply: true });
+        super.message = await interaction.channel.send({content: `${super.role}`, embeds: [super.participantsEmbed] });
+        const messageReaction = await interaction.reply({embeds: [super.infoEmbed], components: [optionsRow, super.classesRow, super.rolesRow], fetchReply: true });
 
         const collector = messageReaction.createMessageComponentCollector({ time: time });
 

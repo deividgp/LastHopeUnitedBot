@@ -2,7 +2,7 @@ const Discord = require('discord.js');
 
 class Trial {
 
-    constructor(id, trial, tanks, datetime, description, raidleader, client) {
+    constructor(id, trial, tanks, datetime, role, description, raidleader, interaction, client) {
         this._id = id;
         this._name = trial;
         this._hMax = 2;
@@ -12,15 +12,16 @@ class Trial {
         this._tCounter = 0;
         this._ddCounter = 0;
         this._datetime = datetime;
+        this._role = role;
         this._description = description;
         this._raidleader = raidleader;
         this._message = undefined;
         this._client = client;
         this._participantsEmbed = new Discord.MessageEmbed()
             .addFields(
-                { name: 'Tanks', value: `0/${super.tMax}`, inline: true },
+                { name: 'Tanks', value: `0/${this._tMax}`, inline: true },
                 { name: 'Healers', value: `0/2`, inline: true },
-                { name: 'Damage Dealers', value: `0/${super.ddMax}`, inline: true },
+                { name: 'Damage Dealers', value: `0/${this._ddMax}`, inline: true },
             )
         this._infoEmbed = new Discord.MessageEmbed()
             .setTitle(`${this._name}`)
@@ -28,6 +29,8 @@ class Trial {
             .addField('Date and time', `<t:${this._datetime.getTime() / 1000}>`, false)
         if (this._raidleader != undefined) {
             this._infoEmbed.addField('Raidleader', `${this._raidleader}`);
+        }else{
+            this._infoEmbed.addField('Raidleader', `${interaction.user}`);
         }
         if (this._description != undefined) {
             this._infoEmbed.setDescription(this._description);
@@ -129,6 +132,10 @@ class Trial {
 
     get datetime() {
         return this._datetime;
+    }
+
+    get role() {
+        return this._role;
     }
 
     get client() {

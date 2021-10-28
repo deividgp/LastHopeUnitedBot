@@ -35,6 +35,12 @@ module.exports = {
         required: true,
     },
     {
+        name: 'role',
+        type: ApplicationCommandOptionType.Role,
+        description: 'Role that will be pinged',
+        required: true,
+    },
+    {
         name: 'description',
         type: ApplicationCommandOptionType.String,
         description: 'Trial description',
@@ -53,12 +59,14 @@ module.exports = {
         const date = options.getString('date');
         const time = options.getString('time');
         const multirole = options.getBoolean('multirole');
+        const role = options.getRole('role');
         const description = options.getString('description');
         const raidleader = options.getUser('raidleader');
+        
         const datetime = moment(`${date} ${time}`, "DD/MM/YYYY HH:mm").toDate();
 
         if (tanks >= 1 && date.length == 10 && time.length == 5 && new Date() < datetime)
-            return trials.addTrial(trial, tanks, datetime, multirole, description, interaction, raidleader, client);
+            return trials.addTrial(trial, tanks, datetime, multirole, role, description, interaction, raidleader, client);
 
         return await interaction.reply({ content: `Couldn't create trial`, ephemeral: true });
     }
