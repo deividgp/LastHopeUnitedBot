@@ -106,16 +106,20 @@ class MultiroleTrial extends Trial {
     }
 
     async listParticipants(channel) {
-        let msgBlock = "";
-        for (let index = 0; index < this._participants._counter; index++) {
-            const element = this._participants.participants[index];
-            if (element.state != "partial") {
-                const mainChar = element.characters.getMainCharacter();
-                msgBlock = msgBlock + `${super.message.guild.members.cache.find(m => m.id == element.id)} is **${element.state}** as ${mainChar.clas} ${mainChar.role}\n`;
+        try {
+            let msgBlock = "";
+            for (let index = 0; index < this._participants._counter; index++) {
+                const element = this._participants.participants[index];
+                if (element.state != "partial") {
+                    const mainChar = element.characters.getMainCharacter();
+                    msgBlock = msgBlock + `${super.message.guild.members.cache.find(m => m.id == element.id)} is **${element.state}** as ${mainChar.clas} ${mainChar.role}\n`;
+                }
             }
-        }
-        if(msgBlock.length > 0){
-            channel.send(msgBlock);
+            if (msgBlock.length > 0) {
+                channel.send(msgBlock);
+            }
+        } catch (error) {
+            console.error(error);
         }
     }
 
@@ -190,8 +194,8 @@ class MultiroleTrial extends Trial {
 
         const auxDatetime = new Date(super.datetime.getTime());
         const time = auxDatetime.setMinutes(auxDatetime.getMinutes() - 15) - new Date();
-        super.message = await interaction.channel.send({content: `${super.role}`, embeds: [super.participantsEmbed] });
-        const messageReaction = await interaction.reply({embeds: [super.infoEmbed], components: [optionsRow, super.classesRow, super.rolesRow], fetchReply: true });
+        super.message = await interaction.channel.send({ content: `${super.role}`, embeds: [super.participantsEmbed] });
+        const messageReaction = await interaction.reply({ embeds: [super.infoEmbed], components: [optionsRow, super.classesRow, super.rolesRow], fetchReply: true });
 
         const collector = messageReaction.createMessageComponentCollector({ time: time });
 

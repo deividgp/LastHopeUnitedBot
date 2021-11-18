@@ -12,12 +12,14 @@ module.exports = {
     }],
     async execute(trials, client, interaction) {
         if (!interaction.member.permissions.has("ADMINISTRATOR"))
-            return await interaction.reply(`Not enough permissions`);
+            return await interaction.reply({ content: 'Not enough permissions', ephemeral: true });
 
         const number = interaction.options.getInteger('nummessages');
         if (number == 0 || number == undefined)
-            return await interaction.reply(`The first argument is invalid`);
+            return await interaction.reply({ content: 'Number is invalid', ephemeral: true });
 
-        deleteMessages(interaction.channel, number);
+        interaction.channel.bulkDelete(number).then(async () => {
+            return await interaction.reply({ content: 'Messages deleted', ephemeral: true });
+        }).catch(e => console.log(e));;
     }
 }
