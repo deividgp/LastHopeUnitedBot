@@ -23,7 +23,7 @@
         "fs": "^0.0.1-security",
         "google-search-results-nodejs": "^2.0.1",
         "googleapis": "^66.0.0",
-        "moment": "^2.29.1",
+        "moment": "^2.29.4",
         "mongoose": "^6.0.5",
         "node-fetch": "^3.1.1",
         "twit": "^2.2.11"
